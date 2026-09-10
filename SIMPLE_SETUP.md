@@ -76,11 +76,11 @@ want) → **Commit changes**.
 
 ```json
 {
-  "myBrand": { "name": "YourBrandName" },
+  "myBrand": { "name": "YourDefaultBrandName" },
   "myLandingPages": [
-    { "url": "https://yourbrand.com/products/your-product", "type": "PDP" },
-    { "url": "https://yourbrand.com/pages/your-advertorial", "type": "5 Reasons Why" },
-    { "url": "https://yourbrand.com/pages/your-quiz", "type": "Quiz" }
+    { "url": "https://brand-a.com/products/your-product", "type": "PDP", "brandName": "Brand A" },
+    { "url": "https://brand-a.com/pages/your-advertorial", "type": "5 Reasons Why", "brandName": "Brand A" },
+    { "url": "https://brand-b.com/pages/your-quiz", "type": "Quiz", "brandName": "Brand B" }
   ],
   "competitors": [
     { "name": "Competitor 1", "landingPage": "https://competitor1.com" },
@@ -93,16 +93,17 @@ want) → **Commit changes**.
 That's the only file you ever need to touch again — to add, remove, or
 swap out a competitor later, just edit this file the same way.
 
-- **`myBrand.name`** (optional) — your own brand name. If you set this,
-  the sheet's **Localized Primary Text** column swaps the competitor's
-  brand name in their ad copy for yours automatically. Skip this field
-  entirely if you don't want that swap yet.
+- **`myBrand.name`** (optional) — your default brand name, used for the
+  swap below whenever a matched landing page doesn't specify its own.
+  Skip it entirely if every one of your `myLandingPages` entries has its
+  own `brandName`, or if you don't want the swap at all.
 - **`myLandingPages`** (optional) — **one shared list**, not per
   competitor. List every landing page you've built (one, three, six, as
-  many as you have — it's fine to add more later, or leave it as `[]` for
-  now). For each ad, whichever entry here best matches *that ad's*
-  competitor landing page type gets picked automatically — you don't
-  assign pages to specific competitors yourself. For each entry:
+  many as you have, across as many of your own brands as you run — it's
+  fine to add more later, or leave it as `[]` for now). For each ad,
+  whichever entry here best matches *that ad's* competitor landing page
+  type gets picked automatically — you don't assign pages to specific
+  competitors yourself. For each entry:
   - **`url`** — paste it exactly as you want it to show up in the sheet.
   - **`type`** — a short label **you** choose for what kind of page it is
     (e.g. `"PDP"`, `"Home"`, `"Collection"`, `"5 Reasons Why"`, `"Quiz"`,
@@ -112,6 +113,10 @@ swap out a competitor later, just edit this file the same way.
     picks whichever of your pages is the closest match (exact wording
     doesn't need to match — "Advertorial" will still be matched against a
     competitor page auto-labeled `5-reasons-why`, for example).
+  - **`brandName`** (optional) — this page's own brand name, if
+    `myLandingPages` spans more than one of your brands (each brand's
+    pages get their own brand name in the swap). Omit it to use the
+    top-level `myBrand.name` for that entry instead.
 
 The `competitors.simple.json` in this repo already has an empty
 `"myLandingPages": []` waiting for you — edit that file, add `"myBrand"`

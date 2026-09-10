@@ -53,4 +53,14 @@ describe("matchLandingPage", () => {
     const options = [{ url: "https://mine.com/only-page", type: "Whatever" }];
     expect(matchLandingPage("PDP", options)?.url).toBe("https://mine.com/only-page");
   });
+
+  it("preserves extra fields (e.g. brandName) on the matched option, for a list spanning multiple brands", () => {
+    const options = [
+      { url: "https://brand-a.com/products/x", type: "PDP", brandName: "Brand A" },
+      { url: "https://brand-b.com/pages/why", type: "5 Reasons Why", brandName: "Brand B" },
+    ];
+    const match = matchLandingPage("PDP", options);
+    expect(match?.url).toBe("https://brand-a.com/products/x");
+    expect(match?.brandName).toBe("Brand A");
+  });
 });

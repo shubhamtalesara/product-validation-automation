@@ -141,7 +141,7 @@ async function enrichAd(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
   group: DedupGroup<CompetitorCandidate>,
-  myBrandName: string | undefined,
+  defaultBrandName: string | undefined,
   myLandingPages: MyLandingPage[],
 ): Promise<SimpleAdRow | null> {
   const adId = group.representative.id;
@@ -190,7 +190,9 @@ async function enrichAd(
       body: body ?? "",
       competitorBrandName: competitor.name,
       competitorDomain,
-      myBrandName,
+      // A matched landing page's own brand name wins (myLandingPages can span
+      // more than one of your own brands); otherwise fall back to myBrand.name.
+      myBrandName: myMatch?.brandName ?? defaultBrandName,
       myLandingPageUrl: myMatch?.url,
     });
 

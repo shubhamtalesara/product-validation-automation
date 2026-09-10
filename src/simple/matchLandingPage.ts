@@ -1,8 +1,3 @@
-export interface MyLandingPage {
-  url: string;
-  type: string;
-}
-
 function normalize(s: string): string {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 }
@@ -55,7 +50,7 @@ function bucketOf(type: string): Bucket {
  * bucket, then breaks ties within that pool by word overlap with the
  * competitor's own type text. Deterministic, no fuzzy ML matching.
  */
-export function matchLandingPage(competitorType: string, options: MyLandingPage[]): MyLandingPage | null {
+export function matchLandingPage<T extends { type: string }>(competitorType: string, options: T[]): T | null {
   if (options.length === 0) return null;
 
   const competitorBucket = bucketOf(competitorType);

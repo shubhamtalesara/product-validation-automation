@@ -1,9 +1,10 @@
 {
   "myLandingPages": [
-    { "url": "https://get.trywellvi.com/pages/nano-powered-esophageal-pdp", "type": "PDP" },
+    { "url": "https://get.trywellvi.com/pages/nano-powered-esophageal-pdp", "type": "PDP", "brandName": "wellvi" },
     {
       "url": "https://get.trywellvi.com/pages/your-doctor-calls-it-reflux-your-esophagus-calls-it-an-emergency",
-      "type": "advertorial/listicle"
+      "type": "advertorial/listicle",
+      "brandName": "wellvi"
     }
   ],
   "competitors": [

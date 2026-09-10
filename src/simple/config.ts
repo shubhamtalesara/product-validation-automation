@@ -10,6 +10,8 @@ const myLandingPageSchema = z.object({
   url: z.string().min(1),
   /** Free-text page type YOU assign (e.g. "PDP", "5 Reasons Why", "Quiz") - not auto-detected. */
   type: z.string().min(1),
+  /** Per-page brand name override, for when myLandingPages spans more than one of your own brands. Falls back to myBrand.name when omitted. */
+  brandName: z.string().min(1).optional(),
 });
 
 const configSchema = z.object({
