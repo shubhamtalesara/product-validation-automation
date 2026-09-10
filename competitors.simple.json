@@ -1,7 +1,7 @@
 {
   "competitors": [
-    { "name": "Mary tank", "landingPage": "https://mary-tanks.com/", "advertiserId": "a7219f8a-3e19-4edb-b661-d3b55ec4520f" },
-    { "name": "Avouria", "landingPage": "http://avouria.com", "advertiserId": "3534ffb0-da1e-4f95-988c-fc9b068eb769" },
-    { "name": "Simply Elsie", "landingPage": "http://simply-elsie.co.uk", "advertiserId": "2a5cc2fe-40e7-42e6-b56d-a0fdac304fec" }
+    { "name": "Mary tank", "landingPage": "https://mary-tanks.com/", "advertiserId": "1025492680642203" },
+    { "name": "Avouria", "landingPage": "http://avouria.com", "advertiserId": "840116625857656" },
+    { "name": "Simply Elsie", "landingPage": "http://simply-elsie.co.uk", "advertiserId": "1107800459077831" }
   ]
 }
