@@ -15,6 +15,14 @@ const myLandingPageSchema = z.object({
 const configSchema = z.object({
   /** Your own brand - used to swap the competitor's brand name into yours in ad copy. Omit to skip that swap. */
   myBrand: z.object({ name: z.string().min(1) }).optional(),
+  /**
+   * Your own replicated landing pages (however many you have - 1, 3, 6+),
+   * each labeled with its own type. This is ONE shared list used across
+   * every competitor: for each competitor ad, whichever of these pages
+   * best matches that ad's landing page type gets picked - not a separate
+   * list per competitor.
+   */
+  myLandingPages: z.array(myLandingPageSchema).optional().default([]),
   competitors: z
     .array(
       z.object({
@@ -22,8 +30,6 @@ const configSchema = z.object({
         landingPage: z.string().min(1),
         /** Optional manual override if domain-based lookup doesn't match TrendTrack's advertiserId. */
         advertiserId: z.string().optional(),
-        /** Your own replicated landing pages for this competitor, each labeled with its own type. */
-        myLandingPages: z.array(myLandingPageSchema).optional().default([]),
       }),
     )
     .min(1, "competitors.simple.json must list at least one competitor"),
@@ -34,6 +40,7 @@ export type MyLandingPage = z.infer<typeof myLandingPageSchema>;
 
 export interface SimpleConfig {
   myBrand?: { name: string };
+  myLandingPages: MyLandingPage[];
   competitors: SimpleCompetitor[];
 }
 
@@ -52,5 +59,5 @@ export async function loadSimpleConfig(): Promise<SimpleConfig> {
       `competitors.simple.json is invalid: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`,
     );
   }
-  return { myBrand: parsed.data.myBrand, competitors: parsed.data.competitors };
+  return { myBrand: parsed.data.myBrand, myLandingPages: parsed.data.myLandingPages, competitors: parsed.data.competitors };
 }

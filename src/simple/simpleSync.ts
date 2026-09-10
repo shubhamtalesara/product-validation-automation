@@ -8,7 +8,7 @@ import { TrendtrackClient } from "../trendtrack/client.js";
 import type { TrendtrackAdSummary } from "../trendtrack/types.js";
 import { dedupeCreatives, type DedupCandidate, type DedupGroup } from "../research/dedupe.js";
 import { SheetsClient, type SheetsCredentials } from "../sheets/sheetsClient.js";
-import { loadSimpleConfig, type SimpleCompetitor } from "./config.js";
+import { loadSimpleConfig, type MyLandingPage, type SimpleCompetitor } from "./config.js";
 import { resolveAdvertiserIds } from "./resolveAdvertisers.js";
 import { classifyLandingPage } from "./landingPageType.js";
 import { deriveHeadline } from "./headline.js";
@@ -142,6 +142,7 @@ async function enrichAd(
   competitor: SimpleCompetitor,
   group: DedupGroup<CompetitorCandidate>,
   myBrandName: string | undefined,
+  myLandingPages: MyLandingPage[],
 ): Promise<SimpleAdRow | null> {
   const adId = group.representative.id;
   try {
@@ -178,7 +179,7 @@ async function enrichAd(
     const landingPageUrl = detail.content?.landingPageUrl ?? summaryContent?.landingPageUrl ?? "";
     const landingPageType = classifyLandingPage(landingPageUrl);
 
-    const myMatch = matchLandingPage(landingPageType, competitor.myLandingPages ?? []);
+    const myMatch = matchLandingPage(landingPageType, myLandingPages);
     let competitorDomain = "";
     try {
       competitorDomain = extractDomain(landingPageUrl || competitor.landingPage);
@@ -312,7 +313,7 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
  */
 export async function runSimpleSync(): Promise<CompetitorResult[]> {
   logger.info("Starting simple competitor ad sync");
-  const { myBrand, competitors } = await loadSimpleConfig();
+  const { myBrand, myLandingPages, competitors } = await loadSimpleConfig();
   const trendtrack = new TrendtrackClient({
     apiKey: env.TRENDTRACK_API_KEY,
     baseUrl: env.TRENDTRACK_BASE_URL,
@@ -352,7 +353,7 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
   );
 
   for (const { gathering, group } of selected) {
-    const ad = await enrichAd(trendtrack, gathering.competitor, group, myBrand?.name);
+    const ad = await enrichAd(trendtrack, gathering.competitor, group, myBrand?.name, myLandingPages);
     if (ad) resultsByCompetitor.get(gathering.competitor.name)!.ads.push(ad);
   }
 

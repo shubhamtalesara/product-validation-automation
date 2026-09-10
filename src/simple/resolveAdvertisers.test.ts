@@ -14,11 +14,7 @@ function fakeClient(overrides: {
   } as unknown as TrendtrackClient;
 }
 
-const competitor: SimpleCompetitor = {
-  name: "Acme",
-  landingPage: "https://acme.com/products",
-  myLandingPages: [],
-};
+const competitor: SimpleCompetitor = { name: "Acme", landingPage: "https://acme.com/products" };
 
 describe("resolveAdvertiserIds", () => {
   it("uses the manual override without calling lookup", async () => {
