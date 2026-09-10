@@ -1,7 +1,7 @@
 {
   "competitors": [
-    { "name": "Competitor 1", "landingPage": "https://example.com" },
-    { "name": "Competitor 2", "landingPage": "https://example.com" },
-    { "name": "Competitor 3", "landingPage": "https://example.com" }
+    { "name": "Mary tank", "landingPage": "https://mary-tanks.com/" },
+    { "name": "Avouria", "landingPage": "http://avouria.com" },
+    { "name": "Simply Elsie", "landingPage": "http://simply-elsie.co.uk" }
   ]
 }
