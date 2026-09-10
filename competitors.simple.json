@@ -1,8 +1,8 @@
 {
   "myLandingPages": [
-    { "url": "https://get.trywellvi.com/pages/dog-lis", "type": "listicle", "brandName": "wellvi" },
+    { "url": "https://get.trywellvi.com/pages/dog-lis", "type": "indoor-peeing-pdp-v1", "brandName": "wellvi" },
     { "url": "https://get.trywellvi.com/pages/dog-collar", "type": "PDP", "brandName": "wellvi" },
-    { "url": "https://get.trywellvi.com/pages/dog-collar-adv-d", "type": "advertorial", "brandName": "wellvi" }
+    { "url": "https://get.trywellvi.com/pages/dog-collar-adv-d", "type": "ccl-dog-adv-rev03-26", "brandName": "wellvi" }
   ],
   "competitors": [
     { "name": "calmi collar", "landingPage": "try.calmicollar.com" }
