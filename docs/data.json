@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-10T09:49:14.840Z",
+  "generatedAt": "2026-09-10T10:11:38.583Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
       "name": "Mary tank",
       "landingPage": "https://mary-tanks.com/",
-      "error": "Could not find TrendTrack ads for [\"mary-tanks.com\"] (from https://mary-tanks.com/). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 404 for GET /v1/advertisers/mary-tanks.com/ads: {\"error\":{\"code\":\"not_found\",\"message\":\"Advertiser not found.\",\"requestId\":\"000d1b9b-0947-4a9f-b40a-95980c507fd6\"}})",
+      "error": "Could not find TrendTrack ads for [\"mary-tanks.com\"] (from https://mary-tanks.com/). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 404 for GET /v1/advertisers/mary-tanks.com/ads: {\"error\":{\"code\":\"not_found\",\"message\":\"Advertiser not found.\",\"requestId\":\"2d9ddb6a-a71f-409e-aeb2-5651427570a6\"}})",
       "ads": []
     },
     {
@@ -187,8 +187,8 @@
           "mediaType": "image",
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/f7cd6769ba29aca09b1a38c13ac923f52fd301e5e2128e81f9f28e9b9f104b94.jpg",
           "thumbnailUrl": "",
-          "reach": 32026,
-          "daysRunning": 58,
+          "reach": 32048,
+          "daysRunning": 59,
           "rank": 1
         },
         {
@@ -301,8 +301,8 @@
           "mediaType": "image",
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/5953d5cad3487c9f3652e35c69ceb01a34ca76b1ca4923f67599b1cf49a4baf9.jpg",
           "thumbnailUrl": "",
-          "reach": 7892,
-          "daysRunning": 58,
+          "reach": 8371,
+          "daysRunning": 59,
           "rank": 2
         },
         {
@@ -339,8 +339,8 @@
           "mediaType": "video",
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/c144a40a4794b23e448f3a787d2a6d44cc4dc87bd5f3455047adcd5caa77a642.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/3c2fd041fc873a6e7b9cf4a7fc32c3fd413ec1ba784a3fa5f5ba204a53621e81.jpg",
-          "reach": 6266,
-          "daysRunning": 52,
+          "reach": 6287,
+          "daysRunning": 53,
           "rank": 3
         },
         {
@@ -377,8 +377,8 @@
           "mediaType": "image",
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/7fd24efdf3eee5509457d8a1e248fb2d3f078e30f768a3fc297628bd21dd5212.jpg",
           "thumbnailUrl": "",
-          "reach": 4805,
-          "daysRunning": 58,
+          "reach": 4808,
+          "daysRunning": 59,
           "rank": 4
         },
         {
@@ -473,7 +473,7 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/5e6eda8118babaaf290c00f86d4b9a0a34fcaf42cce436928ae51e09aa21b1a6.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/d5ef3a6ab2bf3632291ba576ecf6050715ac08edfe306325ae2ed40bd64d7f71.jpg",
           "reach": 2185,
-          "daysRunning": 47,
+          "daysRunning": 48,
           "rank": 5
         },
         {
@@ -548,8 +548,8 @@
           "mediaType": "video",
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/23a9a60e5bbaebc78b5df8fb20e1decb960a21743bcd0749207b12c14af1aac4.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/b69047ccbb2565fb84e7586890331dceeb8e7e53c180119c1bd570f3a392af61.jpg",
-          "reach": 1643,
-          "daysRunning": 33,
+          "reach": 1675,
+          "daysRunning": 34,
           "rank": 6
         },
         {
@@ -567,8 +567,8 @@
           "mediaType": "video",
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/250e14648f1e3c6e956ad7e98095c00bd73e4d249d8c14d515cc5b94f38f3ae6.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/aaf4852bf447423fbf92a687b7ceb3ea5bc1267c61368bda341dd4da73412cda.jpg",
-          "reach": 1326,
-          "daysRunning": 40,
+          "reach": 1353,
+          "daysRunning": 41,
           "rank": 7
         },
         {
