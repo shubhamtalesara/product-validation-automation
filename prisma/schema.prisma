@@ -1,0 +1,163 @@
+// Prisma schema for the product-validation-automation pipeline.
+//
+// Default provider is SQLite so the whole system runs with zero external
+// services in development/CI. For production, switch `provider` below to
+// "postgresql", point DATABASE_URL at a Postgres instance, and re-run
+// `npm run db:setup`. All field types used here are supported by both.
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Competitor {
+  id             String   @id @default(cuid())
+  name           String
+  advertiserId   String   @unique
+  brandtrackerId String?
+  active         Boolean  @default(true)
+  category       String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  ads CompetitorAd[]
+
+  @@index([active])
+}
+
+model CompetitorAd {
+  id             String  @id @default(cuid())
+  trendtrackAdId String  @unique
+  collationId    String?
+  competitorId   String
+  competitor     Competitor @relation(fields: [competitorId], references: [id])
+
+  status      String?
+  createdAt   DateTime  @default(now())
+  firstSeenAt DateTime?
+  lastSeenAt  DateTime?
+  daysRunning Int?
+
+  mediaType    String?
+  mediaUrl     String?
+  thumbnailUrl String?
+  storageUrl   String?
+  mediaHash    String?
+
+  primaryText    String?
+  headline       String?
+  cta            String?
+  landingPageUrl String?
+
+  reach          Int?
+  reachDelta1d   Int?
+  reachDelta7d   Int?
+  reachDelta30d  Int?
+
+  currentRank Int?
+  rankDelta   Int?
+
+  transcript       String?
+  creativeAnalysis String?
+
+  // Fallback-dedup fingerprint and count of Meta-ad-instance variants
+  // collapsed into this creative concept (used as the duplication signal).
+  dedupeFingerprint String?
+  duplicateCount    Int      @default(1)
+
+  validationScore Float?
+
+  rawTrendtrackData String? // JSON-serialized raw API response
+
+  updatedAt DateTime @updatedAt
+
+  testCreative TestCreative?
+
+  @@index([competitorId])
+  @@index([collationId])
+  @@index([dedupeFingerprint])
+  @@index([validationScore])
+}
+
+model TestCreative {
+  id             String       @id @default(cuid())
+  competitorAdId String       @unique
+  competitorAd   CompetitorAd @relation(fields: [competitorAdId], references: [id])
+
+  creativeUrl        String?
+  creativeStorageUrl String?
+
+  primaryText    String?
+  headline       String?
+  cta            String?
+  landingPageUrl String?
+
+  launchDate String? // YYYY-MM-DD as entered by the human
+  launchTime String? // HH:mm as entered by the human
+  timezone   String? // IANA tz name, e.g. America/New_York
+  launchAt   DateTime? // resolved UTC instant derived from the above
+
+  status       String  @default("RESEARCHED")
+  errorReason  String?
+  verdict      String?
+  publishLock  String? // PUBLISHING | PUBLISHED | FAILED
+
+  metaCampaignId String?
+  metaAdSetId    String?
+  metaCreativeId String?
+  metaAdId       String?
+  metaStatus     String?
+
+  sheetRowNumber Int?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  performanceSnapshots PerformanceSnapshot[]
+
+  @@index([status])
+  @@index([launchAt])
+}
+
+model PerformanceSnapshot {
+  id             String       @id @default(cuid())
+  testCreativeId String
+  testCreative   TestCreative @relation(fields: [testCreativeId], references: [id])
+
+  date DateTime
+
+  spend      Float?
+  impressions Int?
+  clicks     Int?
+  ctr        Float?
+  cpc        Float?
+  cpm        Float?
+
+  conversions      Int?
+  conversionValue  Float?
+  cpa              Float?
+  roas             Float?
+
+  rawMetaData String? // JSON-serialized raw insights payload
+
+  createdAt DateTime @default(now())
+
+  @@unique([testCreativeId, date])
+  @@index([testCreativeId])
+}
+
+model JobRun {
+  id         String    @id @default(cuid())
+  jobType    String // research | approval | publish | performance
+  status     String // RUNNING | SUCCESS | FAILED
+  startedAt  DateTime  @default(now())
+  finishedAt DateTime?
+  error      String?
+  summary    String? // JSON-serialized structured summary
+
+  @@index([jobType, startedAt])
+}
