@@ -1,10 +1,10 @@
 {
   "myLandingPages": [
-    { "url": "https://get.trywellvi.com/pages/foundetion", "type": "listicle", "brandName": "wellvi" },
-    { "url": "https://get.trywellvi.com/pages/wellvi-foundation", "type": "PDP", "brandName": "wellvi" }
+    { "url": "https://get.trywellvi.com/pages/dog-lis", "type": "listicle", "brandName": "wellvi" },
+    { "url": "https://get.trywellvi.com/pages/dog-collar", "type": "PDP", "brandName": "wellvi" },
+    { "url": "https://get.trywellvi.com/pages/dog-collar-adv-d", "type": "advertorial", "brandName": "wellvi" }
   ],
   "competitors": [
-    { "name": "rise luxus", "landingPage": "riseluxus.com" },
-    { "name": "lega care", "landingPage": "legacare.com" }
+    { "name": "calmi collar", "landingPage": "try.calmicollar.com" }
   ]
 }
