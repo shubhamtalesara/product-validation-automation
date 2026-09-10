@@ -109,8 +109,10 @@ then:
   to their landing page).
 
 After this, it re-runs automatically every day at 6am UTC — you never have
-to do anything again unless you want to change the 3 competitors (step 4)
-or force a refresh right now (step 6).
+to do anything again unless you want to change your competitor list (step
+4, any number of them — 3, 10, 30, no limit) or force a refresh right now
+(step 6). Every competitor is fetched in parallel, so adding more doesn't
+meaningfully slow the sync down.
 
 ## What's in the Google Sheet
 

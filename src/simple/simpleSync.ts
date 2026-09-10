@@ -12,6 +12,7 @@ import { loadSimpleConfig, type SimpleCompetitor } from "./config.js";
 import { resolveAdvertiserIds } from "./resolveAdvertisers.js";
 import { classifyLandingPage } from "./landingPageType.js";
 import { deriveHeadline } from "./headline.js";
+import { isJunkAd } from "./junkAds.js";
 import { clubIntoAdSets } from "./adSets.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
 
@@ -79,9 +80,11 @@ async function gatherCandidateGroups(
       )) {
         summaries.push(ad);
       }
-      const qualifying = summaries.filter((s) => (s.daysRunning ?? 0) >= MIN_DAYS_RUNNING);
+      const qualifying = summaries.filter(
+        (s) => (s.daysRunning ?? 0) >= MIN_DAYS_RUNNING && !isJunkAd(s.content),
+      );
       logger.info(
-        `Retrieved ${summaries.length} active ads for ${competitor.name} (${qualifying.length} running ${MIN_DAYS_RUNNING}+ days)`,
+        `Retrieved ${summaries.length} active ads for ${competitor.name} (${qualifying.length} qualify: 30+ days running, not a page-engagement/junk ad)`,
         { advertiserId },
       );
       if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
@@ -144,6 +147,20 @@ async function enrichAd(
       );
       return null;
     }
+    if (isJunkAd(detail.content)) {
+      logger.info(`Skipping ad ${adId} for ${competitor.name} - looks like a page-engagement/junk ad, not a real ad`);
+      return null;
+    }
+
+    // The list summary and the single-ad detail response are documented as
+    // the same shape, but TrendTrack's own fields sometimes carry more (or
+    // less) content on one than the other for the same ad - fall back to
+    // the summary's content wherever the detail response left a field null.
+    const summaryContent = group.representative.summary.content;
+    const title = detail.content?.title ?? summaryContent?.title;
+    const body = detail.content?.body ?? summaryContent?.body;
+    const cta = detail.content?.callToAction ?? summaryContent?.callToAction ?? "";
+    const landingPageUrl = detail.content?.landingPageUrl ?? summaryContent?.landingPageUrl ?? "";
 
     let mediaUrl = detail.media?.mediaUrl ?? "";
     let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
@@ -170,17 +187,16 @@ async function enrichAd(
       });
     }
 
-    const landingPageUrl = detail.content?.landingPageUrl ?? "";
     return {
       competitor: competitor.name,
       competitorLandingPage: competitor.landingPage,
-      facebookPageName: detail.advertiser?.name ?? "",
+      facebookPageName: detail.advertiser?.name ?? group.representative.summary.advertiser?.name ?? "",
       adSet: "",
       trendtrackAdId: adId,
       trendtrackPreviewUrl,
-      headline: deriveHeadline(detail.content?.title, detail.content?.body),
-      primaryText: detail.content?.body ?? "",
-      cta: detail.content?.callToAction ?? "",
+      headline: deriveHeadline(title, body),
+      primaryText: body ?? "",
+      cta,
       landingPageUrl,
       landingPageType: classifyLandingPage(landingPageUrl),
       mediaType: detail.media?.type ?? "",

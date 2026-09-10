@@ -2,9 +2,9 @@
 
 > **Just want competitor ads in a Sheet + a dashboard, with no coding?**
 > See **[SIMPLE_SETUP.md](./SIMPLE_SETUP.md)** — a 10-minute, click-only
-> setup for 3 competitors, no CLI/terminal required. Everything below this
-> point documents the full advanced pipeline (Meta publishing, approval
-> workflow, database).
+> setup for as many competitors as you want, no CLI/terminal required.
+> Everything below this point documents the full advanced pipeline (Meta
+> publishing, approval workflow, database).
 
 Automates the full competitor-ad research -> validation -> Meta publishing
 pipeline end to end, without n8n/Zapier/Make or any other automation

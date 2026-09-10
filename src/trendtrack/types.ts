@@ -1,29 +1,7 @@
 export type TrendtrackMediaType = "image" | "video" | "carousel" | string;
 
-export interface TrendtrackAdSummary {
-  id: string;
-  collationId?: string | null;
-  platform?: string;
-  status?: string;
-  mediaType?: TrendtrackMediaType;
-  daysRunning?: number;
-  createdAt?: string;
-  firstSeenAt?: string;
-  lastSeenAt?: string;
-  rank?: number;
-  [key: string]: unknown;
-}
-
-export interface TrendtrackAdListResponse {
-  data: TrendtrackAdSummary[];
-  total?: number;
-  limit?: number;
-  offset?: number;
-  hasMore?: boolean;
-}
-
 export interface TrendtrackAdContent {
-  /** Usually null in practice - most ads only have body copy, no separate headline. */
+  /** The ad's headline, when TrendTrack has one indexed separately from the body copy. */
   title?: string | null;
   /** The actual ad copy/primary text. */
   body?: string;
@@ -56,7 +34,15 @@ export interface TrendtrackAdvertiser {
   [key: string]: unknown;
 }
 
-export interface TrendtrackAdDetail {
+/**
+ * Fields shared by every ad object TrendTrack returns - the lightweight
+ * list/summary endpoints (`GET /v1/advertisers/{id}/ads`, `GET /v1/ads`,
+ * `POST /v1/ads/query`) and the single-ad detail endpoint
+ * (`GET /v1/ads/{id}`) all use this same shape per TrendTrack's published
+ * API reference; the detail endpoint just adds a handful of extra fields
+ * (transcript, creativeAnalysis, links, shops, pageAnalytics) on top.
+ */
+export interface TrendtrackAdCore {
   id: string;
   collationId?: string | null;
   platform?: string;
@@ -73,13 +59,27 @@ export interface TrendtrackAdDetail {
   audience?: unknown;
   rank?: TrendtrackAdRank;
   flags?: unknown;
+  [key: string]: unknown;
+}
+
+/** Item shape returned by the list/summary/query ad endpoints - same fields as `TrendtrackAdCore`. */
+export type TrendtrackAdSummary = TrendtrackAdCore;
+
+export interface TrendtrackAdListResponse {
+  data: TrendtrackAdSummary[];
+  total?: number;
+  limit?: number;
+  offset?: number;
+  hasMore?: boolean;
+}
+
+export interface TrendtrackAdDetail extends TrendtrackAdCore {
   /** Either a plain transcript string, or `{ language, segments, fullText, ... }` for videos. */
   transcript?: string | { fullText?: string; [key: string]: unknown } | null;
   creativeAnalysis?: string | { hook?: { text?: string; [key: string]: unknown }; [key: string]: unknown } | null;
   links?: unknown;
   shops?: unknown;
   pageAnalytics?: unknown;
-  [key: string]: unknown;
 }
 
 /** The API wraps every single-resource response as `{ requestId, data }`. */

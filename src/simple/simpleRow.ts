@@ -8,6 +8,7 @@ export const SIMPLE_SHEET_COLUMNS = [
   "Landing Page",
   "Landing Page Type",
   "Media Type",
+  "Creative Preview",
   "Media Link",
   "Impressions (Reach)",
   "Days Running",
@@ -36,6 +37,21 @@ export interface SimpleAdRow {
   rank: number | null;
 }
 
+/**
+ * Google Sheets renders `=IMAGE(url, 4, w, h)` as an inline thumbnail in the
+ * cell (mode 4 = fixed custom size) - this is the standard way to get a
+ * visual creative preview in a sheet, rather than just a text link. Prefers
+ * the dedicated thumbnail; for image ads without one, the media file itself
+ * doubles as its own preview. A video with no thumbnail has nothing
+ * IMAGE() can render, so that cell is left blank rather than showing a
+ * broken-image icon for the raw video file.
+ */
+function creativePreviewFormula(row: SimpleAdRow): string {
+  const url = row.thumbnailUrl || (row.mediaType === "image" ? row.mediaUrl : "");
+  if (!url) return "";
+  return `=IMAGE("${url.replace(/"/g, '""')}", 4, 80, 80)`;
+}
+
 export function simpleRowToSheetValues(row: SimpleAdRow): (string | number)[] {
   return [
     row.competitor,
@@ -47,6 +63,7 @@ export function simpleRowToSheetValues(row: SimpleAdRow): (string | number)[] {
     row.landingPageUrl,
     row.landingPageType,
     row.mediaType,
+    creativePreviewFormula(row),
     row.mediaUrl,
     row.reach ?? "",
     row.daysRunning ?? "",
