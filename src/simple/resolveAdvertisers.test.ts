@@ -68,6 +68,34 @@ describe("resolveAdvertiserIds", () => {
     expect(result).toEqual({ advertiserIds: ["999"], source: "lookup" });
   });
 
+  it("tries every shop candidate in order, not just the first, until one has advertisers", async () => {
+    const lookup = vi.fn(async () => [
+      {
+        type: "shop",
+        matchType: "fuzzy",
+        matchField: "name",
+        score: 0.7,
+        shop: { id: "shop-empty", domain: "acme-fuzzy-match.com", name: "Acme Fuzzy" },
+      },
+      {
+        type: "shop",
+        matchType: "exact",
+        matchField: "domain",
+        score: 1,
+        shop: { id: "shop-real", domain: "acme.com", name: "Acme" },
+      },
+    ] as TrendtrackLookupResult[]);
+    const getShopAdvertisers = vi.fn(async (shopId: string) =>
+      shopId === "shop-real" ? [{ id: "adv-1", facebookPageId: "111" }] : [],
+    );
+    const client = fakeClient({ lookup, getShopAdvertisers });
+
+    const result = await resolveAdvertiserIds(client, competitor);
+    expect(result).toEqual({ advertiserIds: ["111"], source: "lookup" });
+    expect(getShopAdvertisers).toHaveBeenCalledWith("shop-empty");
+    expect(getShopAdvertisers).toHaveBeenCalledWith("shop-real");
+  });
+
   it("falls back to a direct advertiser match when the matched shop has no linked advertisers", async () => {
     const lookup = vi.fn(async () => [
       {

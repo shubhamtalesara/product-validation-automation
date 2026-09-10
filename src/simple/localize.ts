@@ -4,11 +4,28 @@ function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
-/** Replaces a competitor's brand name (and its possessive form) with your own brand name, case-insensitively, whole-word only. */
+/**
+ * Builds a regex that matches a brand name regardless of how its words are
+ * joined - a config name like "nano-revive" needs to match "NanoRevive"
+ * (concatenated, no separator), "Nano Revive" (space), or "Nano-Revive"
+ * (hyphen) in real ad copy, since the domain-derived name in
+ * competitors.simple.json rarely matches the brand's own stylization
+ * exactly. Splits the configured name into word tokens and allows any run
+ * of spaces/hyphens/underscores (including none at all) between them.
+ */
+function brandNamePattern(competitorBrand: string): RegExp {
+  const tokens = competitorBrand
+    .split(/[\s\-_]+/)
+    .filter(Boolean)
+    .map(escapeRegExp);
+  return new RegExp(`\\b${tokens.join("[\\s\\-_]*")}(['’]s)?\\b`, "gi");
+}
+
+/** Replaces a competitor's brand name (and its possessive form) with your own brand name, case-insensitively, tolerant of spacing/hyphenation differences. */
 export function replaceBrandName(text: string, competitorBrand: string, myBrand: string): string {
   const brand = competitorBrand.trim();
   if (!text || !brand || !myBrand.trim()) return text;
-  const pattern = new RegExp(`\\b${escapeRegExp(brand)}(['’]s)?\\b`, "gi");
+  const pattern = brandNamePattern(brand);
   return text.replace(pattern, (_match, possessive?: string) => (possessive ? `${myBrand}${possessive}` : myBrand));
 }
 

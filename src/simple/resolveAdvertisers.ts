@@ -20,11 +20,14 @@ function dedupeIds(ids: (string | undefined)[]): string[] {
  * competitor. Priority:
  *  1. An explicit manual override in competitors.simple.json.
  *  2. TrendTrack's own resolution chain: one `/v1/lookup?type=auto` call
- *     finds the shop (and/or advertiser) behind the domain, then
+ *     finds the shop(s) (and/or advertiser) behind the domain, then
  *     `/v1/shops/{shopId}/advertisers` lists every Facebook page that shop
  *     runs ads from - a brand with two ad accounts gets both pooled
- *     together instead of only the first one. If the domain resolves
- *     directly to an advertiser but isn't indexed as a shop, that match is
+ *     together instead of only the first one. A domain can resolve to more
+ *     than one shop candidate (exact + fuzzy matches); every shop candidate
+ *     is tried in turn until one actually has linked advertisers, instead
+ *     of giving up after the first (often fuzzy/wrong) match comes back
+ *     empty. If no shop candidate has any, a direct advertiser match is
  *     used instead.
  *  3. A same-as-domain guess as a last resort.
  */
@@ -41,8 +44,8 @@ export async function resolveAdvertiserIds(
   try {
     const matches = await trendtrack.lookup(domain, { type: "auto", limit: 10 });
 
-    const shopId = matches.find((m) => m.shop?.id)?.shop?.id;
-    if (shopId) {
+    const shopIds = dedupeIds(matches.map((m) => m.shop?.id));
+    for (const shopId of shopIds) {
       const advertisers = await trendtrack.getShopAdvertisers(shopId);
       const ids = dedupeIds(advertisers.map((a) => a.facebookPageId ?? a.id));
       if (ids.length > 0) {
@@ -53,7 +56,7 @@ export async function resolveAdvertiserIds(
         });
         return { advertiserIds: ids, source: "lookup" };
       }
-      logger.warn(`Shop ${shopId} for ${competitor.name} has no linked advertisers, checking direct matches`, {
+      logger.warn(`Shop ${shopId} for ${competitor.name} has no linked advertisers, trying next candidate`, {
         domain,
       });
     }

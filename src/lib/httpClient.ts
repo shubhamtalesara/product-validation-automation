@@ -15,7 +15,10 @@ export interface RequestOptions {
   query?: Record<string, string | number | boolean | undefined>;
 }
 
-const DEFAULT_TIMEOUT_MS = 15_000;
+// TrendTrack's /v1/lookup?type=auto searches brandtrackers, advertisers,
+// and shops in one call, and can genuinely take longer than 15s under load -
+// observed timing out repeatedly against the 15s default in production.
+const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_RETRIES = 3;
 const DEFAULT_BASE_DELAY_MS = 500;
 

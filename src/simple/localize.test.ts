@@ -23,6 +23,26 @@ describe("replaceBrandName", () => {
   it("returns the text unchanged when myBrand is empty", () => {
     expect(replaceBrandName("I love Avouria", "Avouria", "")).toBe("I love Avouria");
   });
+
+  it("matches a hyphenated config name against a concatenated one-word mention in copy", () => {
+    expect(replaceBrandName("Introducing EsoRepair by NanoRevive", "nano-revive", "MyBrand")).toBe(
+      "Introducing EsoRepair by MyBrand",
+    );
+  });
+
+  it("matches a hyphenated config name against a spaced mention in copy", () => {
+    expect(replaceBrandName("Introducing EsoRepair by Nano Revive", "nano-revive", "MyBrand")).toBe(
+      "Introducing EsoRepair by MyBrand",
+    );
+  });
+
+  it("matches a hyphenated config name against the same hyphenation in copy", () => {
+    expect(replaceBrandName("by Nano-Revive today", "nano-revive", "MyBrand")).toBe("by MyBrand today");
+  });
+
+  it("still requires a whole-word match at the token boundaries", () => {
+    expect(replaceBrandName("NanoRevived is unrelated", "nano-revive", "MyBrand")).toBe("NanoRevived is unrelated");
+  });
 });
 
 describe("replaceLinkMentions", () => {
