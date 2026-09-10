@@ -66,10 +66,16 @@ async function fetchTopAdsForCompetitor(
       const adId = group.representative.id;
       try {
         const detail = await trendtrack.getAdDetail(adId);
+        if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
+          logger.info(`RAW ad detail for ${adId}`, { detail });
+        }
         let mediaUrl = detail.media?.url ?? "";
         let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
         try {
           const media = await trendtrack.getAdMediaUrl(adId);
+          if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
+            logger.info(`RAW media response for ${adId}`, { media });
+          }
           mediaUrl = media.mediaUrl ?? media.url ?? mediaUrl;
           thumbnailUrl = media.thumbnailUrl ?? thumbnailUrl;
         } catch (err) {
