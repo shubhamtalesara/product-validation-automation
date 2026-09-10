@@ -47,6 +47,14 @@ async function fetchTopAdsForCompetitor(
       summaries.push(ad);
     }
     logger.info(`Retrieved ${summaries.length} active ads for ${competitor.name}`);
+    if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
+      const distinctCollationIds = new Set(summaries.map((s) => s.collationId ?? null)).size;
+      logger.info(`RAW list summary sample for ${competitor.name}`, {
+        distinctCollationIds,
+        totalSummaries: summaries.length,
+        firstThree: summaries.slice(0, 3),
+      });
+    }
 
     const candidates: (DedupCandidate & { summary: TrendtrackAdSummary })[] = summaries.map((s) => ({
       id: s.id,

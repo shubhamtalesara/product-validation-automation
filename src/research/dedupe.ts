@@ -30,6 +30,11 @@ export interface DedupGroup<T extends DedupCandidate> {
  *     primary text + advertiser ID. All four must match, so genuinely
  *     different variants (different copy, different creative) are never
  *     collapsed together.
+ *  4. If none of the above are available (e.g. a lightweight list-endpoint
+ *     summary that only carries id/reach/daysRunning), there is no signal
+ *     to compare on at all - treat the candidate as its own unique concept
+ *     rather than silently merging every such ad into one bucket just
+ *     because they all produced the same empty fallback string.
  */
 export function computeFingerprint(candidate: DedupCandidate): string {
   if (candidate.collationId) {
@@ -41,6 +46,9 @@ export function computeFingerprint(candidate: DedupCandidate): string {
   const normMedia = normalizeMediaUrl(candidate.mediaUrl);
   const normHeadline = normalizeText(candidate.headline);
   const normCopy = normalizeText(candidate.primaryText);
+  if (!normMedia && !normHeadline && !normCopy) {
+    return `unique:${candidate.advertiserId}:${candidate.id}`;
+  }
   return `fallback:${candidate.advertiserId}:${normMedia}:${normHeadline}:${normCopy}`;
 }
 

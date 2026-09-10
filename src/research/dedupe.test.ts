@@ -99,4 +99,14 @@ describe("dedupeCreatives", () => {
     const groups = dedupeCreatives(ads);
     expect(groups).toHaveLength(2);
   });
+
+  it("does not collapse ads into one bucket when there is no collationId, media, headline, or copy to compare (e.g. bare list-endpoint summaries)", () => {
+    const ads = [
+      candidate({ id: "g1", reach: 100 }),
+      candidate({ id: "g2", reach: 200 }),
+      candidate({ id: "g3", reach: 300 }),
+    ];
+    const groups = dedupeCreatives(ads);
+    expect(groups).toHaveLength(3);
+  });
 });
