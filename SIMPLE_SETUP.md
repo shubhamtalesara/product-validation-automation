@@ -1,9 +1,16 @@
 # Quick Setup (no coding required)
 
-This gets you: your Google Sheet auto-filled with your 3 competitors'
-highest-impression ads, plus a live web dashboard — updated automatically
-every day, or on demand with one click. Everything below is clicking
-buttons in websites you already use (Google, GitHub) — no terminal, no code.
+This gets you: your Google Sheet auto-filled with the highest-impression
+ads across all of your competitors, plus a live web dashboard — updated
+automatically every day, or on demand with one click. Everything below is
+clicking buttons in websites you already use (Google, GitHub) — no
+terminal, no code.
+
+You list as many competitors as you want (2, 10, 30 - no limit). The
+system picks the single best `SIMPLE_TOTAL_AD_COUNT` ads (default 30)
+across ALL of them combined by impressions - not a fixed number per
+competitor, so a competitor running many high-performing ads can take up
+most of the slots, while a quiet one might get none in a given run.
 
 Total time: about 10 minutes, once.
 
@@ -58,24 +65,27 @@ time:
 > once it's saved here as a secret, go rotate/regenerate that key in
 > TrendTrack's dashboard so the old, exposed one stops working.
 
-## 4. Tell it who your 3 competitors are
+## 4. Tell it who your competitors are
 
 In this repository: open the file **`competitors.simple.json`** → click the
-pencil (✏️) icon to edit → replace the 3 example entries with your real
-competitor names and landing page URLs → **Commit changes**.
+pencil (✏️) icon to edit → replace the example entries with your real
+competitor names and landing page URLs (add or remove as many as you
+want) → **Commit changes**.
 
 ```json
 {
   "competitors": [
     { "name": "Competitor 1", "landingPage": "https://competitor1.com" },
     { "name": "Competitor 2", "landingPage": "https://competitor2.com" },
-    { "name": "Competitor 3", "landingPage": "https://competitor3.com" }
+    { "name": "Competitor 3", "landingPage": "https://competitor3.com" },
+    { "name": "Competitor 4", "landingPage": "https://competitor4.com" },
+    { "name": "Competitor 5", "landingPage": "https://competitor5.com" }
   ]
 }
 ```
 
-That's the only file you ever need to touch again — to swap out a
-competitor later, just edit this file the same way.
+That's the only file you ever need to touch again — to add, remove, or
+swap out a competitor later, just edit this file the same way.
 
 ## 5. Turn on your dashboard website
 
@@ -92,7 +102,8 @@ sidebar) → **Run workflow** button → **Run workflow**. Wait about a minute,
 then:
 
 - Refresh your **Google Sheet** — a new tab called "Competitor Ads" will
-  have the highest-impression ads from all 3 competitors.
+  have the best 30 (or however many you've set) highest-impression ads
+  across all of your competitors.
 - Refresh your **dashboard URL** from step 5 — you'll see the same ads as
   visual cards (thumbnail, headline, copy, impressions, days running, link
   to their landing page).

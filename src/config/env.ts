@@ -41,7 +41,10 @@ const envSchema = z.object({
   GOOGLE_SHEET_ID: z.string().optional().default(""),
   GOOGLE_SHEET_TAB: z.string().optional().default("Research"),
   SIMPLE_SHEET_TAB: z.string().optional().default("Competitor Ads"),
-  SIMPLE_TOP_PER_COMPETITOR: numberFromString(10),
+  // Global cap across ALL configured competitors combined - the single
+  // best N ads by impressions, regardless of which competitor they're
+  // from. Not a per-competitor quota.
+  SIMPLE_TOTAL_AD_COUNT: numberFromString(30),
 
   // Meta
   META_ACCESS_TOKEN: z.string().optional().default(""),

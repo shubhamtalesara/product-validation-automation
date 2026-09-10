@@ -6,7 +6,7 @@ import { toSanitizedMessage } from "../lib/errors.js";
 import { env } from "../config/env.js";
 import { TrendtrackClient } from "../trendtrack/client.js";
 import type { TrendtrackAdSummary } from "../trendtrack/types.js";
-import { dedupeCreatives, type DedupCandidate } from "../research/dedupe.js";
+import { dedupeCreatives, type DedupCandidate, type DedupGroup } from "../research/dedupe.js";
 import { SheetsClient, type SheetsCredentials } from "../sheets/sheetsClient.js";
 import { loadSimpleConfig, type SimpleCompetitor } from "./config.js";
 import { extractDomain } from "./domain.js";
@@ -29,20 +29,35 @@ interface CompetitorResult {
   ads: SimpleAdRow[];
 }
 
-async function fetchTopAdsForCompetitor(
+type CompetitorCandidate = DedupCandidate & { summary: TrendtrackAdSummary };
+
+interface CandidateGathering {
+  competitor: SimpleCompetitor;
+  advertiserId: string;
+  groups: DedupGroup<CompetitorCandidate>[];
+  error: string | null;
+}
+
+/**
+ * Fetches and dedupes one competitor's active ads into creative-concept
+ * groups (cheap: list endpoint only, no per-ad detail calls yet). The pool
+ * size is sized off the global total so every competitor gets a fair shot
+ * at making the final cross-competitor ranking.
+ */
+async function gatherCandidateGroups(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
-  topN: number,
-): Promise<CompetitorResult> {
+): Promise<CandidateGathering> {
   const advertiserId = competitor.advertiserId ?? extractDomain(competitor.landingPage);
   logger.info(`Fetching ads for ${competitor.name}`, { advertiserId });
+  const poolSize = Math.max(env.SIMPLE_TOTAL_AD_COUNT * 3, 50);
 
   try {
     const summaries: TrendtrackAdSummary[] = [];
     for await (const ad of trendtrack.paginateAdvertiserAds(
       advertiserId,
       { status: "active", sortBy: "reach", order: "desc" },
-      Math.max(topN * 5, 50),
+      poolSize,
     )) {
       summaries.push(ad);
     }
@@ -56,7 +71,7 @@ async function fetchTopAdsForCompetitor(
       });
     }
 
-    const candidates: (DedupCandidate & { summary: TrendtrackAdSummary })[] = summaries.map((s) => ({
+    const candidates: CompetitorCandidate[] = summaries.map((s) => ({
       id: s.id,
       collationId: s.collationId ?? null,
       advertiserId,
@@ -64,66 +79,68 @@ async function fetchTopAdsForCompetitor(
       daysRunning: s.daysRunning ?? null,
       summary: s,
     }));
-    const groups = dedupeCreatives(candidates)
-      .sort((a, b) => (b.representative.reach ?? 0) - (a.representative.reach ?? 0))
-      .slice(0, topN);
-    logger.info(`Selected top ${groups.length} concepts by impressions for ${competitor.name}`);
+    const groups = dedupeCreatives(candidates);
+    logger.info(`Deduplicated to ${groups.length} unique creative concepts for ${competitor.name}`);
 
-    const ads: SimpleAdRow[] = [];
-    for (const group of groups) {
-      const adId = group.representative.id;
-      try {
-        const detail = await trendtrack.getAdDetail(adId);
-        if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
-          logger.info(`RAW ad detail for ${adId}`, { detail });
-        }
-        let mediaUrl = detail.media?.mediaUrl ?? "";
-        let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
-        try {
-          const media = await trendtrack.getAdMediaUrl(adId);
-          if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
-            logger.info(`RAW media response for ${adId}`, { media });
-          }
-          mediaUrl = media.mediaUrl ?? media.url ?? mediaUrl;
-          thumbnailUrl = media.thumbnailUrl ?? thumbnailUrl;
-        } catch (err) {
-          logger.warn(`Could not resolve media URL for ${adId}, using detail fallback`, {
-            error: toSanitizedMessage(err),
-          });
-        }
-        ads.push({
-          competitor: competitor.name,
-          competitorLandingPage: competitor.landingPage,
-          trendtrackAdId: adId,
-          headline: detail.content?.title ?? "",
-          primaryText: detail.content?.body ?? "",
-          cta: detail.content?.callToAction ?? "",
-          landingPageUrl: detail.content?.landingPageUrl ?? "",
-          mediaType: detail.media?.type ?? "",
-          mediaUrl,
-          thumbnailUrl,
-          reach: detail.metrics?.reach ?? reachOf(group.representative.summary),
-          daysRunning: detail.daysRunning ?? group.representative.daysRunning ?? null,
-          rank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
-        });
-      } catch (err) {
-        logger.error(`Failed to fetch detail for ad ${adId}, skipping`, {
-          error: toSanitizedMessage(err),
-        });
-      }
-    }
-
-    return { name: competitor.name, landingPage: competitor.landingPage, advertiserId, error: null, ads };
+    return { competitor, advertiserId, groups, error: null };
   } catch (err) {
     const message = toSanitizedMessage(err);
     logger.error(`Could not fetch ads for ${competitor.name}`, { advertiserId, error: message });
     return {
-      name: competitor.name,
-      landingPage: competitor.landingPage,
+      competitor,
       advertiserId,
+      groups: [],
       error: `Could not find TrendTrack ads for "${advertiserId}" (from ${competitor.landingPage}). If this domain isn't the right TrendTrack advertiser ID, look it up in TrendTrack's dashboard and add "advertiserId" for this competitor in competitors.simple.json. (${message})`,
-      ads: [],
     };
+  }
+}
+
+/** Fetches full ad detail + media for one selected creative concept. */
+async function enrichAd(
+  trendtrack: TrendtrackClient,
+  competitor: SimpleCompetitor,
+  group: DedupGroup<CompetitorCandidate>,
+): Promise<SimpleAdRow | null> {
+  const adId = group.representative.id;
+  try {
+    const detail = await trendtrack.getAdDetail(adId);
+    if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
+      logger.info(`RAW ad detail for ${adId}`, { detail });
+    }
+    let mediaUrl = detail.media?.mediaUrl ?? "";
+    let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
+    try {
+      const media = await trendtrack.getAdMediaUrl(adId);
+      if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
+        logger.info(`RAW media response for ${adId}`, { media });
+      }
+      mediaUrl = media.mediaUrl ?? media.url ?? mediaUrl;
+      thumbnailUrl = media.thumbnailUrl ?? thumbnailUrl;
+    } catch (err) {
+      logger.warn(`Could not resolve media URL for ${adId}, using detail fallback`, {
+        error: toSanitizedMessage(err),
+      });
+    }
+    return {
+      competitor: competitor.name,
+      competitorLandingPage: competitor.landingPage,
+      trendtrackAdId: adId,
+      headline: detail.content?.title ?? "",
+      primaryText: detail.content?.body ?? "",
+      cta: detail.content?.callToAction ?? "",
+      landingPageUrl: detail.content?.landingPageUrl ?? "",
+      mediaType: detail.media?.type ?? "",
+      mediaUrl,
+      thumbnailUrl,
+      reach: detail.metrics?.reach ?? reachOf(group.representative.summary),
+      daysRunning: detail.daysRunning ?? group.representative.daysRunning ?? null,
+      rank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
+    };
+  } catch (err) {
+    logger.error(`Failed to fetch detail for ad ${adId}, skipping`, {
+      error: toSanitizedMessage(err),
+    });
+    return null;
   }
 }
 
@@ -181,6 +198,12 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
   logger.info(`Wrote dashboard data to ${DATA_JSON_PATH}`);
 }
 
+/**
+ * Selects the single best `SIMPLE_TOTAL_AD_COUNT` ads by impressions across
+ * ALL configured competitors combined - not a per-competitor quota. A
+ * competitor with many high-reach ads can take most of the slots; a quiet
+ * one might get none this run.
+ */
 export async function runSimpleSync(): Promise<CompetitorResult[]> {
   logger.info("Starting simple competitor ad sync");
   const competitors = await loadSimpleConfig();
@@ -189,11 +212,35 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
     baseUrl: env.TRENDTRACK_BASE_URL,
   });
 
-  const results: CompetitorResult[] = [];
-  for (const competitor of competitors) {
-    results.push(await fetchTopAdsForCompetitor(trendtrack, competitor, env.SIMPLE_TOP_PER_COMPETITOR));
+  const gatherings = await Promise.all(
+    competitors.map((competitor) => gatherCandidateGroups(trendtrack, competitor)),
+  );
+
+  const pooled = gatherings.flatMap((g) => g.groups.map((group) => ({ gathering: g, group })));
+  const globalTop = pooled
+    .sort((a, b) => (b.group.representative.reach ?? 0) - (a.group.representative.reach ?? 0))
+    .slice(0, env.SIMPLE_TOTAL_AD_COUNT);
+  logger.info(`Selected the top ${globalTop.length} ads by impressions across all competitors`);
+
+  const resultsByCompetitor = new Map<string, CompetitorResult>(
+    gatherings.map((g) => [
+      g.competitor.name,
+      {
+        name: g.competitor.name,
+        landingPage: g.competitor.landingPage,
+        advertiserId: g.advertiserId,
+        error: g.error,
+        ads: [],
+      },
+    ]),
+  );
+
+  for (const { gathering, group } of globalTop) {
+    const ad = await enrichAd(trendtrack, gathering.competitor, group);
+    if (ad) resultsByCompetitor.get(gathering.competitor.name)!.ads.push(ad);
   }
 
+  const results = [...resultsByCompetitor.values()];
   await writeDataJson(results);
   await writeToSheet(results);
 
