@@ -5,7 +5,12 @@ name: Sync competitor ads
 on:
   schedule:
     - cron: "0 6 * * *"
-  workflow_dispatch: {}
+  workflow_dispatch:
+    inputs:
+      debug_logging:
+        description: "Dump raw TrendTrack API responses to this run's log (for troubleshooting)"
+        type: boolean
+        default: false
 
 permissions:
   contents: write
@@ -31,6 +36,7 @@ jobs:
           TRENDTRACK_API_KEY: ${{ secrets.TRENDTRACK_API_KEY }}
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
+          LOG_RAW_TRENDTRACK_RESPONSES: ${{ github.event.inputs.debug_logging }}
         run: npm run simple:sync
 
       - name: Publish updated dashboard data

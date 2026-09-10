@@ -14,6 +14,10 @@ import { classifyLandingPage } from "./landingPageType.js";
 import { deriveHeadline } from "./headline.js";
 import { isJunkAd } from "./junkAds.js";
 import { clubIntoAdSets } from "./adSets.js";
+import { matchLandingPage } from "./matchLandingPage.js";
+import { localizePrimaryText } from "./localize.js";
+import { allocateAdSlots } from "./allocateSlots.js";
+import { extractDomain } from "./domain.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
 
 const logger = createLogger("simple-sync");
@@ -29,8 +33,7 @@ const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
 const MIN_DAYS_RUNNING = 30;
 
 function reachOf(summary: TrendtrackAdSummary): number | null {
-  const metrics = summary["metrics"] as { reach?: number } | undefined;
-  return (summary["reach"] as number | undefined) ?? metrics?.reach ?? null;
+  return summary.metrics?.reach ?? null;
 }
 
 interface CompetitorResult {
@@ -47,6 +50,8 @@ interface CandidateGathering {
   competitor: SimpleCompetitor;
   advertiserIds: string[];
   groups: DedupGroup<CompetitorCandidate>[];
+  /** Total live-ad count across the competitor's page(s) - how much weight they get in slot allocation. */
+  weight: number;
   error: string | null;
 }
 
@@ -55,10 +60,10 @@ interface CandidateGathering {
  * run ads from more than one Facebook page - then fetches and dedupes
  * active ads from ALL of them into one pooled set of creative-concept
  * groups (cheap: list endpoint only, no per-ad detail calls yet). Drops any
- * ad that hasn't run for at least MIN_DAYS_RUNNING days before it can ever
- * be selected. Pool size per advertiser is sized off the global total so
- * every competitor gets a fair shot at making the final cross-competitor
- * ranking.
+ * ad that hasn't run for at least MIN_DAYS_RUNNING days, or that looks like
+ * a page-engagement/junk ad, before it can ever be selected. Also computes
+ * this competitor's total live-ad count (summed once per distinct page,
+ * from data already in the list response) for weighted slot allocation.
  */
 async function gatherCandidateGroups(
   trendtrack: TrendtrackClient,
@@ -71,6 +76,7 @@ async function gatherCandidateGroups(
 
   try {
     const allCandidates: CompetitorCandidate[] = [];
+    const liveAdsByPage = new Map<string, number>();
     for (const advertiserId of advertiserIds) {
       const summaries: TrendtrackAdSummary[] = [];
       for await (const ad of trendtrack.paginateAdvertiserAds(
@@ -80,6 +86,10 @@ async function gatherCandidateGroups(
       )) {
         summaries.push(ad);
       }
+      const liveAdsCount = summaries.find((s) => typeof s.advertiser?.liveAdsCount === "number")?.advertiser
+        ?.liveAdsCount;
+      if (typeof liveAdsCount === "number") liveAdsByPage.set(advertiserId, liveAdsCount);
+
       const qualifying = summaries.filter(
         (s) => (s.daysRunning ?? 0) >= MIN_DAYS_RUNNING && !isJunkAd(s.content),
       );
@@ -109,9 +119,10 @@ async function gatherCandidateGroups(
     }
 
     const groups = dedupeCreatives(allCandidates);
-    logger.info(`Deduplicated to ${groups.length} unique creative concepts for ${competitor.name}`);
+    const weight = [...liveAdsByPage.values()].reduce((sum, n) => sum + n, 0);
+    logger.info(`Deduplicated to ${groups.length} unique creative concepts for ${competitor.name}`, { weight });
 
-    return { competitor, advertiserIds, groups, error: null };
+    return { competitor, advertiserIds, groups, weight, error: null };
   } catch (err) {
     const message = toSanitizedMessage(err);
     logger.error(`Could not fetch ads for ${competitor.name}`, { advertiserIds, error: message });
@@ -119,6 +130,7 @@ async function gatherCandidateGroups(
       competitor,
       advertiserIds,
       groups: [],
+      weight: 0,
       error: `Could not find TrendTrack ads for ${JSON.stringify(advertiserIds)} (from ${competitor.landingPage}). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add "advertiserId" for this competitor in competitors.simple.json. (${message})`,
     };
   }
@@ -129,6 +141,7 @@ async function enrichAd(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
   group: DedupGroup<CompetitorCandidate>,
+  myBrandName: string | undefined,
 ): Promise<SimpleAdRow | null> {
   const adId = group.representative.id;
   try {
@@ -158,9 +171,27 @@ async function enrichAd(
     // the summary's content wherever the detail response left a field null.
     const summaryContent = group.representative.summary.content;
     const title = detail.content?.title ?? summaryContent?.title;
+    const ctaDescription = detail.content?.ctaDescription ?? summaryContent?.ctaDescription;
+    const ctaLinkDescription = detail.content?.ctaLinkDescription ?? summaryContent?.ctaLinkDescription;
     const body = detail.content?.body ?? summaryContent?.body;
     const cta = detail.content?.callToAction ?? summaryContent?.callToAction ?? "";
     const landingPageUrl = detail.content?.landingPageUrl ?? summaryContent?.landingPageUrl ?? "";
+    const landingPageType = classifyLandingPage(landingPageUrl);
+
+    const myMatch = matchLandingPage(landingPageType, competitor.myLandingPages ?? []);
+    let competitorDomain = "";
+    try {
+      competitorDomain = extractDomain(landingPageUrl || competitor.landingPage);
+    } catch {
+      // Leave blank - localizePrimaryText treats an empty domain as "nothing to swap".
+    }
+    const localizedPrimaryText = localizePrimaryText({
+      body: body ?? "",
+      competitorBrandName: competitor.name,
+      competitorDomain,
+      myBrandName,
+      myLandingPageUrl: myMatch?.url,
+    });
 
     let mediaUrl = detail.media?.mediaUrl ?? "";
     let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
@@ -194,11 +225,14 @@ async function enrichAd(
       adSet: "",
       trendtrackAdId: adId,
       trendtrackPreviewUrl,
-      headline: deriveHeadline(title, body),
+      headline: deriveHeadline({ title, ctaDescription, ctaLinkDescription, primaryText: body }),
       primaryText: body ?? "",
+      localizedPrimaryText,
       cta,
       landingPageUrl,
-      landingPageType: classifyLandingPage(landingPageUrl),
+      landingPageType,
+      myLandingPageUrl: myMatch?.url ?? "",
+      myLandingPageType: myMatch?.type ?? "",
       mediaType: detail.media?.type ?? "",
       mediaUrl,
       thumbnailUrl,
@@ -269,14 +303,16 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
 }
 
 /**
- * Selects the single best `SIMPLE_TOTAL_AD_COUNT` ads by impressions across
- * ALL configured competitors combined - not a per-competitor quota. A
- * competitor with many high-reach ads can take most of the slots; a quiet
- * one might get none this run.
+ * Selects `SIMPLE_TOTAL_AD_COUNT` ads total, split across competitors
+ * proportionally to each one's live-ad count (see allocateAdSlots) rather
+ * than a single global top-N by reach - a competitor running far more ads
+ * than the others earns more slots, but everyone with at least one
+ * qualifying ad gets at least one, so nobody gets shut out by a single
+ * high-reach competitor.
  */
 export async function runSimpleSync(): Promise<CompetitorResult[]> {
   logger.info("Starting simple competitor ad sync");
-  const competitors = await loadSimpleConfig();
+  const { myBrand, competitors } = await loadSimpleConfig();
   const trendtrack = new TrendtrackClient({
     apiKey: env.TRENDTRACK_API_KEY,
     baseUrl: env.TRENDTRACK_BASE_URL,
@@ -286,11 +322,21 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
     competitors.map((competitor) => gatherCandidateGroups(trendtrack, competitor)),
   );
 
-  const pooled = gatherings.flatMap((g) => g.groups.map((group) => ({ gathering: g, group })));
-  const globalTop = pooled
-    .sort((a, b) => (b.group.representative.reach ?? 0) - (a.group.representative.reach ?? 0))
-    .slice(0, env.SIMPLE_TOTAL_AD_COUNT);
-  logger.info(`Selected the top ${globalTop.length} ads by impressions across all competitors`);
+  const slotsByCompetitor = allocateAdSlots(
+    gatherings.map((g) => ({ name: g.competitor.name, weight: g.weight, available: g.groups.length })),
+    env.SIMPLE_TOTAL_AD_COUNT,
+  );
+  logger.info("Allocated ad slots per competitor by live-ad weight", {
+    allocation: Object.fromEntries(slotsByCompetitor),
+  });
+
+  const selected = gatherings.flatMap((gathering) => {
+    const slots = slotsByCompetitor.get(gathering.competitor.name) ?? 0;
+    return [...gathering.groups]
+      .sort((a, b) => (b.representative.reach ?? 0) - (a.representative.reach ?? 0))
+      .slice(0, slots)
+      .map((group) => ({ gathering, group }));
+  });
 
   const resultsByCompetitor = new Map<string, CompetitorResult>(
     gatherings.map((g) => [
@@ -305,8 +351,8 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
     ]),
   );
 
-  for (const { gathering, group } of globalTop) {
-    const ad = await enrichAd(trendtrack, gathering.competitor, group);
+  for (const { gathering, group } of selected) {
+    const ad = await enrichAd(trendtrack, gathering.competitor, group, myBrand?.name);
     if (ad) resultsByCompetitor.get(gathering.competitor.name)!.ads.push(ad);
   }
 

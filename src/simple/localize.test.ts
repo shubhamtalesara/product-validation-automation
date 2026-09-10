@@ -1,0 +1,76 @@
+import { describe, expect, it } from "vitest";
+import { localizePrimaryText, replaceBrandName, replaceLinkMentions } from "./localize.js";
+
+describe("replaceBrandName", () => {
+  it("replaces a whole-word case-insensitive brand mention", () => {
+    expect(replaceBrandName("Then I found Avouria's built-in bra tank.", "Avouria", "MyBrand")).toBe(
+      "Then I found MyBrand's built-in bra tank.",
+    );
+  });
+
+  it("preserves the possessive apostrophe style", () => {
+    expect(replaceBrandName("avouria’s tank is great", "Avouria", "MyBrand")).toBe("MyBrand’s tank is great");
+  });
+
+  it("replaces a non-possessive mention", () => {
+    expect(replaceBrandName("I love Avouria so much", "Avouria", "MyBrand")).toBe("I love MyBrand so much");
+  });
+
+  it("does not replace a substring that isn't a whole word", () => {
+    expect(replaceBrandName("Avourialand is different", "Avouria", "MyBrand")).toBe("Avourialand is different");
+  });
+
+  it("returns the text unchanged when myBrand is empty", () => {
+    expect(replaceBrandName("I love Avouria", "Avouria", "")).toBe("I love Avouria");
+  });
+});
+
+describe("replaceLinkMentions", () => {
+  it("replaces a bare domain mention", () => {
+    expect(replaceLinkMentions("Shop now at avouria.com today", "avouria.com", "mybrand.com")).toBe(
+      "Shop now at mybrand.com today",
+    );
+  });
+
+  it("preserves protocol and www prefix", () => {
+    expect(replaceLinkMentions("Visit https://www.avouria.com now", "avouria.com", "mybrand.com")).toBe(
+      "Visit https://www.mybrand.com now",
+    );
+  });
+
+  it("is a no-op when the domain never appears in the text", () => {
+    expect(replaceLinkMentions("No links here", "avouria.com", "mybrand.com")).toBe("No links here");
+  });
+});
+
+describe("localizePrimaryText", () => {
+  it("swaps both brand name and link when both are provided", () => {
+    const result = localizePrimaryText({
+      body: "Then I found Avouria's tank at avouria.com.",
+      competitorBrandName: "Avouria",
+      competitorDomain: "avouria.com",
+      myBrandName: "MyBrand",
+      myLandingPageUrl: "https://mybrand.com/products/tank",
+    });
+    expect(result).toBe("Then I found MyBrand's tank at mybrand.com.");
+  });
+
+  it("only swaps the brand name when no matched landing page is available", () => {
+    const result = localizePrimaryText({
+      body: "Then I found Avouria's tank.",
+      competitorBrandName: "Avouria",
+      competitorDomain: "avouria.com",
+      myBrandName: "MyBrand",
+    });
+    expect(result).toBe("Then I found MyBrand's tank.");
+  });
+
+  it("returns the original text unchanged when no myBrandName is configured yet", () => {
+    const result = localizePrimaryText({
+      body: "Then I found Avouria's tank.",
+      competitorBrandName: "Avouria",
+      competitorDomain: "avouria.com",
+    });
+    expect(result).toBe("Then I found Avouria's tank.");
+  });
+});

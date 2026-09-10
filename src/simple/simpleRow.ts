@@ -4,9 +4,12 @@ export const SIMPLE_SHEET_COLUMNS = [
   "Ad Set",
   "Headline",
   "Primary Text",
+  "Localized Primary Text",
   "CTA",
   "Landing Page",
   "Landing Page Type",
+  "My Landing Page",
+  "My Landing Page Type",
   "Media Type",
   "Creative Preview",
   "Media Link",
@@ -26,9 +29,12 @@ export interface SimpleAdRow {
   trendtrackPreviewUrl: string;
   headline: string;
   primaryText: string;
+  localizedPrimaryText: string;
   cta: string;
   landingPageUrl: string;
   landingPageType: string;
+  myLandingPageUrl: string;
+  myLandingPageType: string;
   mediaType: string;
   mediaUrl: string;
   thumbnailUrl: string;
@@ -59,9 +65,12 @@ export function simpleRowToSheetValues(row: SimpleAdRow): (string | number)[] {
     row.adSet,
     row.headline,
     row.primaryText,
+    row.localizedPrimaryText,
     row.cta,
     row.landingPageUrl,
     row.landingPageType,
+    row.myLandingPageUrl,
+    row.myLandingPageType,
     row.mediaType,
     creativePreviewFormula(row),
     row.mediaUrl,

@@ -7,10 +7,12 @@ clicking buttons in websites you already use (Google, GitHub) — no
 terminal, no code.
 
 You list as many competitors as you want (2, 10, 30 - no limit). The
-system picks the single best `SIMPLE_TOTAL_AD_COUNT` ads (default 30)
-across ALL of them combined by impressions - not a fixed number per
-competitor, so a competitor running many high-performing ads can take up
-most of the slots, while a quiet one might get none in a given run.
+system fills `SIMPLE_TOTAL_AD_COUNT` slots (default 30) total, split across
+your competitors in proportion to how many live ads each one is running -
+a competitor running far more ads than the others earns more of the
+slots, but every competitor with at least one qualifying ad is guaranteed
+at least one slot. Nobody gets shut out just because another competitor
+happens to have higher-reach ads.
 
 Total time: about 10 minutes, once.
 
@@ -65,7 +67,7 @@ time:
 > once it's saved here as a secret, go rotate/regenerate that key in
 > TrendTrack's dashboard so the old, exposed one stops working.
 
-## 4. Tell it who your competitors are
+## 4. Tell it who your competitors are (and, optionally, your own landing pages)
 
 In this repository: open the file **`competitors.simple.json`** → click the
 pencil (✏️) icon to edit → replace the example entries with your real
@@ -74,18 +76,42 @@ want) → **Commit changes**.
 
 ```json
 {
+  "myBrand": { "name": "YourBrandName" },
   "competitors": [
-    { "name": "Competitor 1", "landingPage": "https://competitor1.com" },
+    {
+      "name": "Competitor 1",
+      "landingPage": "https://competitor1.com",
+      "myLandingPages": [
+        { "url": "https://yourbrand.com/products/your-product", "type": "PDP" },
+        { "url": "https://yourbrand.com/pages/your-advertorial", "type": "5 Reasons Why" }
+      ]
+    },
     { "name": "Competitor 2", "landingPage": "https://competitor2.com" },
-    { "name": "Competitor 3", "landingPage": "https://competitor3.com" },
-    { "name": "Competitor 4", "landingPage": "https://competitor4.com" },
-    { "name": "Competitor 5", "landingPage": "https://competitor5.com" }
+    { "name": "Competitor 3", "landingPage": "https://competitor3.com" }
   ]
 }
 ```
 
 That's the only file you ever need to touch again — to add, remove, or
 swap out a competitor later, just edit this file the same way.
+
+- **`myBrand.name`** (optional) — your own brand name. If you set this,
+  the sheet's **Localized Primary Text** column swaps the competitor's
+  brand name in their ad copy for yours automatically. Skip this field
+  entirely if you don't want that swap yet.
+- **`myLandingPages`** (optional, per competitor) — the landing pages
+  *you've* built that replicate this competitor's. You can list one, three,
+  ten, however many you have for that competitor — it's fine to leave this
+  out entirely for a competitor you haven't replicated yet. For each one:
+  - **`url`** — paste it exactly as you want it to show up in the sheet.
+  - **`type`** — a short label **you** choose for what kind of page it is
+    (e.g. `"PDP"`, `"Home"`, `"Collection"`, `"5 Reasons Why"`, `"Quiz"`,
+    `"Advertorial"`, `"VSL"` — anything). The system does **not** try to
+    guess your page's type from its content; it only compares the label
+    you type here against the competitor ad's own auto-detected type, and
+    picks whichever of your pages is the closest match (exact wording
+    doesn't need to match — "Advertorial" will still be matched against a
+    competitor page auto-labeled `5-reasons-why`, for example).
 
 ## 5. Turn on your dashboard website
 
@@ -121,20 +147,32 @@ Each row is one winning ad, with:
 - **Competitor** / **Facebook Page Name** — which brand and which of their
   Facebook pages ran it (a brand can run more than one page).
 - **Ad Set** — see "Ad set clubbing" below.
-- **Headline**, **Primary Text**, **CTA** — the ad copy. If TrendTrack has
-  no separate headline for an ad (common — most ads only have body copy),
-  the first sentence of the primary text is used instead so this column is
-  never blank.
-- **Landing Page** — the exact URL the ad sends people to.
-- **Landing Page Type** — a label for what kind of page it is: `PDP` for a
-  plain product page, `Collection` for a category page, `Home` for the
-  homepage, or the page's own slug (e.g. `5-reasons-why`) for an
+- **Headline** — TrendTrack's own headline field when it has one; when it
+  doesn't (common — most ads only have body copy), falls back to a short
+  link-description field if TrendTrack has one, and only as a last resort
+  derives one from the first sentence of the primary text, so this column
+  is never blank.
+- **Primary Text** — the competitor's original ad copy, unedited.
+- **Localized Primary Text** — the same copy with the competitor's brand
+  name (and any inline link mentions) swapped for yours, from `myBrand`
+  and the matched `myLandingPages` entry (see step 4). Identical to
+  Primary Text until you fill those in.
+- **CTA** — the call-to-action button label.
+- **Landing Page** / **Landing Page Type** — the exact URL the ad sends
+  people to, and an auto-detected label for what kind of page it is: `PDP`
+  for a plain product page, `Collection` for a category page, `Home` for
+  the homepage, or the page's own slug (e.g. `5-reasons-why`) for an
   advertorial/quiz/listicle-style page.
-- **Media Type** / **Media Link** — image or video, and the direct file URL.
+- **My Landing Page** / **My Landing Page Type** — whichever of your own
+  `myLandingPages` entries (step 4) best matches this ad's landing page
+  type, and the type label you gave it. Blank until you add entries for
+  that competitor.
+- **Media Type** / **Creative Preview** / **Media Link** — image or video,
+  an inline visual preview of the actual creative, and the direct file URL.
 - **Impressions (Reach)**, **Days Running**, **Rank** — performance
-  signals. Every ad here has been running **at least 30 days** — anything
-  newer is excluded, since a 30+ day run is what separates a proven winner
-  from a fresh test.
+  signals. Every ad here has been running **at least 30 days** and is a
+  real conversion ad — anything younger, or a page-engagement/"Like Page"
+  ad with no real landing page, is excluded before it can ever take a slot.
 - **TrendTrack Ad ID** / **TrendTrack Preview Link** — click the preview
   link to open the actual ad inside TrendTrack's own viewer.
 
@@ -147,6 +185,17 @@ at most 5 ads, and video ads are never grouped with static (image) ads in
 the same set — a leftover handful of one format still gets its own
 (smaller) set rather than being mixed in.
 
+## Troubleshooting a specific ad's data
+
+If something in the sheet looks wrong for a specific ad (wrong headline,
+wrong copy, etc.) and you want to see exactly what TrendTrack returned for
+it: **Actions** tab → **Sync competitor ads** → **Run workflow** → check
+the **"Dump raw TrendTrack API responses..."** box → **Run workflow**.
+Open that run's log afterward (click the run → the "Fetch competitor ads"
+step) and search for the ad's ID — you'll see the complete raw response
+TrendTrack sent back for it, which is the fastest way to report a data
+issue precisely.
+
 ## How it finds every one of a competitor's ad accounts
 
 You only give it a website — not a TrendTrack ID. Under the hood, for each
@@ -157,6 +206,19 @@ page/ad account), then pools the ads from all of them together before
 picking the top performers. So if a brand advertises from 2 Facebook
 pages, both are covered automatically — you never have to hunt for a
 "page ID" yourself.
+
+## How ad slots are split across competitors
+
+Instead of one global "best 30 by impressions" list (which let one
+high-reach competitor crowd everyone else out), each competitor's share of
+the total slots is set by their own total live-ad count relative to
+everyone else's — a competitor running 400 live ads earns proportionally
+more slots than one running 8, but that one still always gets at least
+one slot as long as they have at least one qualifying ad. Within its own
+allocation, each competitor's best ads (by impressions) are picked. This
+is a fixed arithmetic rule (largest-remainder apportionment, the same
+method used to divide parliamentary seats by population) — not an AI
+judgment call, and it never produces an even split either.
 
 ## What if a competitor's ads don't show up?
 
