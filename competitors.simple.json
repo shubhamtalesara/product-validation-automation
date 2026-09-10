@@ -1,10 +1,10 @@
 {
   "myLandingPages": [
-    { "url": "https://vitalbloo.com/pages/mb", "type": "PDP", "brandName": "vitalbloo" }
+    { "url": "https://get.trywellvi.com/pages/foundetion", "type": "listicle", "brandName": "wellvi" },
+    { "url": "https://get.trywellvi.com/pages/wellvi-foundation", "type": "PDP", "brandName": "wellvi" }
   ],
   "competitors": [
-    { "name": "truehealthic", "landingPage": "truehealthic.com" },
-    { "name": "vitalbloo", "landingPage": "vitalbloo.com" },
-    { "name": "feelific", "landingPage": "feelific.com" }
+    { "name": "rise luxus", "landingPage": "riseluxus.com" },
+    { "name": "lega care", "landingPage": "legacare.com" }
   ]
 }
