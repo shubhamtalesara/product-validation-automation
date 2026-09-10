@@ -1,10 +1,8 @@
 {
   "myLandingPages": [
-    { "url": "https://get.trywellvi.com/pages/dog-lis", "type": "indoor-peeing-pdp-v1", "brandName": "wellvi" },
-    { "url": "https://get.trywellvi.com/pages/dog-collar", "type": "PDP", "brandName": "wellvi" },
-    { "url": "https://get.trywellvi.com/pages/dog-collar-adv-d", "type": "ccl-dog-adv-rev03-26", "brandName": "wellvi" }
-  ],
+    { "url": "https://get.trywellvi.com/pages/wellvi-tea", "type": "PDP", "brandName": "wellvi" }
+ ],
   "competitors": [
-    { "name": "calmi collar", "landingPage": "try.calmicollar.com" }
+    { "name": "Pipi Tea", "landingPage": "https://shop.pipitea.com" }
   ]
 }
