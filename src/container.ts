@@ -2,7 +2,7 @@ import { getPrisma } from "./db/client.js";
 import { env, scoringWeights, verdictThresholds } from "./config/env.js";
 import { TrendtrackClient } from "./trendtrack/client.js";
 import { getStorageProvider } from "./storage/index.js";
-import { SheetsClient } from "./sheets/sheetsClient.js";
+import { SheetsClient, type SheetsCredentials } from "./sheets/sheetsClient.js";
 import { MetaClient } from "./meta/metaClient.js";
 import type { ResearchWorkerDeps } from "./research/researchWorker.js";
 import type { ApprovalWorkerDeps } from "./approval/approvalWorker.js";
@@ -20,14 +20,20 @@ export function buildContainer() {
 
   const storage = getStorageProvider();
 
-  const sheetsConfigured = Boolean(
-    env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_REFRESH_TOKEN && env.GOOGLE_SHEET_ID,
-  );
+  const sheetsCredentials: SheetsCredentials | undefined = env.GOOGLE_SERVICE_ACCOUNT_JSON
+    ? { kind: "service-account", json: env.GOOGLE_SERVICE_ACCOUNT_JSON }
+    : env.GOOGLE_CLIENT_ID && env.GOOGLE_CLIENT_SECRET && env.GOOGLE_REFRESH_TOKEN
+      ? {
+          kind: "oauth",
+          clientId: env.GOOGLE_CLIENT_ID,
+          clientSecret: env.GOOGLE_CLIENT_SECRET,
+          refreshToken: env.GOOGLE_REFRESH_TOKEN,
+        }
+      : undefined;
+  const sheetsConfigured = Boolean(sheetsCredentials && env.GOOGLE_SHEET_ID);
   const sheets = sheetsConfigured
     ? new SheetsClient({
-        clientId: env.GOOGLE_CLIENT_ID,
-        clientSecret: env.GOOGLE_CLIENT_SECRET,
-        refreshToken: env.GOOGLE_REFRESH_TOKEN,
+        credentials: sheetsCredentials!,
         spreadsheetId: env.GOOGLE_SHEET_ID,
         sheetTab: env.GOOGLE_SHEET_TAB,
       })

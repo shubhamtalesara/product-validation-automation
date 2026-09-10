@@ -16,6 +16,7 @@
     "test:watch": "vitest",
     "cli": "tsx src/cli/index.ts",
     "worker": "tsx src/worker.ts",
+    "simple:sync": "tsx src/simple/simpleSync.ts",
     "prisma:generate": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:deploy": "prisma migrate deploy",

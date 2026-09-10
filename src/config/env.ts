@@ -36,8 +36,12 @@ const envSchema = z.object({
   GOOGLE_CLIENT_ID: z.string().optional().default(""),
   GOOGLE_CLIENT_SECRET: z.string().optional().default(""),
   GOOGLE_REFRESH_TOKEN: z.string().optional().default(""),
+  // Simplest auth path: paste the whole downloaded service-account JSON key file.
+  GOOGLE_SERVICE_ACCOUNT_JSON: z.string().optional().default(""),
   GOOGLE_SHEET_ID: z.string().optional().default(""),
   GOOGLE_SHEET_TAB: z.string().optional().default("Research"),
+  SIMPLE_SHEET_TAB: z.string().optional().default("Competitor Ads"),
+  SIMPLE_TOP_PER_COMPETITOR: numberFromString(10),
 
   // Meta
   META_ACCESS_TOKEN: z.string().optional().default(""),

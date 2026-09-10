@@ -1,21 +1,65 @@
 import { google, type sheets_v4 } from "googleapis";
-import { OAuth2Client } from "google-auth-library";
+import { JWT, OAuth2Client } from "google-auth-library";
 import { createLogger } from "../lib/logger.js";
 import { RetryableError, toSanitizedMessage } from "../lib/errors.js";
 
 const logger = createLogger("sheets");
 
-export interface SheetsClientOptions {
+const SHEETS_SCOPE = ["https://www.googleapis.com/auth/spreadsheets"];
+
+export interface OAuthCredentials {
+  kind: "oauth";
   clientId: string;
   clientSecret: string;
   refreshToken: string;
+}
+
+export interface ServiceAccountCredentials {
+  kind: "service-account";
+  /** Full contents of the downloaded service-account JSON key file. */
+  json: string;
+}
+
+export type SheetsCredentials = OAuthCredentials | ServiceAccountCredentials;
+
+export interface SheetsClientOptions {
+  credentials: SheetsCredentials;
   spreadsheetId: string;
   sheetTab: string;
 }
 
+function buildAuth(credentials: SheetsCredentials): OAuth2Client | JWT {
+  if (credentials.kind === "service-account") {
+    let parsed: { client_email?: string; private_key?: string };
+    try {
+      parsed = JSON.parse(credentials.json);
+    } catch {
+      throw new Error(
+        "GOOGLE_SERVICE_ACCOUNT_JSON is not valid JSON - paste the entire contents of the downloaded key file.",
+      );
+    }
+    if (!parsed.client_email || !parsed.private_key) {
+      throw new Error(
+        "GOOGLE_SERVICE_ACCOUNT_JSON is missing client_email/private_key - paste the entire downloaded key file.",
+      );
+    }
+    return new JWT({
+      email: parsed.client_email,
+      key: parsed.private_key,
+      scopes: SHEETS_SCOPE,
+    });
+  }
+
+  const auth = new OAuth2Client(credentials.clientId, credentials.clientSecret);
+  auth.setCredentials({ refresh_token: credentials.refreshToken });
+  return auth;
+}
+
 /**
- * Thin wrapper around the Google Sheets v4 API, authenticated via a
- * long-lived OAuth refresh token (GOOGLE_CLIENT_ID/SECRET/REFRESH_TOKEN).
+ * Thin wrapper around the Google Sheets v4 API. Supports two auth modes:
+ *  - Service account (recommended for simple/unattended use): share the
+ *    sheet with the service account's `client_email` as an Editor.
+ *  - OAuth refresh token (for the advanced pipeline / user-owned sheets).
  */
 export class SheetsClient {
   private readonly sheets: sheets_v4.Sheets;
@@ -23,8 +67,7 @@ export class SheetsClient {
   readonly sheetTab: string;
 
   constructor(options: SheetsClientOptions) {
-    const auth = new OAuth2Client(options.clientId, options.clientSecret);
-    auth.setCredentials({ refresh_token: options.refreshToken });
+    const auth = buildAuth(options.credentials);
     this.sheets = google.sheets({ version: "v4", auth });
     this.spreadsheetId = options.spreadsheetId;
     this.sheetTab = options.sheetTab;
@@ -77,6 +120,26 @@ export class SheetsClient {
     const updatedRange = response.data.updates?.updatedRange ?? "";
     const match = updatedRange.match(/![A-Z]+(\d+)/);
     return match ? Number(match[1]) : -1;
+  }
+
+  /** Replaces the entire tab's contents (header + all rows) in one call. */
+  async replaceAll(rows: (string | number)[][]): Promise<void> {
+    await this.wrapErrors(
+      this.sheets.spreadsheets.values.clear({
+        spreadsheetId: this.spreadsheetId,
+        range: this.sheetTab,
+      }),
+      "clear",
+    );
+    await this.wrapErrors(
+      this.sheets.spreadsheets.values.update({
+        spreadsheetId: this.spreadsheetId,
+        range: `${this.sheetTab}!A1`,
+        valueInputOption: "USER_ENTERED",
+        requestBody: { values: rows },
+      }),
+      "replaceAll",
+    );
   }
 
   async writeHeader(headers: string[]): Promise<void> {

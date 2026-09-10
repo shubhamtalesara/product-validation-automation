@@ -1,0 +1,7 @@
+{
+  "competitors": [
+    { "name": "Competitor 1", "landingPage": "https://example.com" },
+    { "name": "Competitor 2", "landingPage": "https://example.com" },
+    { "name": "Competitor 3", "landingPage": "https://example.com" }
+  ]
+}
