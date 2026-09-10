@@ -7,6 +7,32 @@ const logger = createLogger("sheets");
 
 const SHEETS_SCOPE = ["https://www.googleapis.com/auth/spreadsheets"];
 
+// Google Sheets hard-rejects an entire write if any single cell exceeds
+// 50,000 characters - not just that cell, the whole batched request fails.
+// A cell should never legitimately be this long (ad copy tops out at a few
+// thousand characters); it's a sign of a malformed upstream value (e.g. a
+// URL field). Truncate defensively so one bad field can never take down an
+// otherwise-good write.
+const SHEETS_MAX_CELL_LENGTH = 50_000;
+const TRUNCATION_SUFFIX = " …[truncated, too long for a sheet cell]";
+
+function truncateCell(value: string | number): string | number {
+  if (typeof value !== "string" || value.length <= SHEETS_MAX_CELL_LENGTH) return value;
+  logger.warn(
+    `Truncating an oversized sheet cell (${value.length} chars) to fit Google Sheets' 50,000-character limit`,
+    { preview: value.slice(0, 200) },
+  );
+  return `${value.slice(0, SHEETS_MAX_CELL_LENGTH - TRUNCATION_SUFFIX.length)}${TRUNCATION_SUFFIX}`;
+}
+
+function truncateRow(values: (string | number)[]): (string | number)[] {
+  return values.map(truncateCell);
+}
+
+function truncateRows(rows: (string | number)[][]): (string | number)[][] {
+  return rows.map(truncateRow);
+}
+
 export interface OAuthCredentials {
   kind: "oauth";
   clientId: string;
@@ -142,7 +168,7 @@ export class SheetsClient {
         spreadsheetId: this.spreadsheetId,
         range,
         valueInputOption: "USER_ENTERED",
-        requestBody: { values: [values] },
+        requestBody: { values: [truncateRow(values)] },
       }),
       "updateRow",
     );
@@ -157,7 +183,7 @@ export class SheetsClient {
         range: this.quotedTab,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
-        requestBody: { values: [values] },
+        requestBody: { values: [truncateRow(values)] },
       }),
       "appendRow",
     );
@@ -181,7 +207,7 @@ export class SheetsClient {
         spreadsheetId: this.spreadsheetId,
         range: `${this.quotedTab}!A1`,
         valueInputOption: "USER_ENTERED",
-        requestBody: { values: rows },
+        requestBody: { values: truncateRows(rows) },
       }),
       "replaceAll",
     );

@@ -95,6 +95,40 @@ describe("SheetsClient range quoting", () => {
   });
 });
 
+describe("SheetsClient cell-size guard", () => {
+  it("truncates a cell over the 50,000-character Sheets limit in replaceAll", async () => {
+    const client = newClient("Competitor Ads");
+    const oversized = "x".repeat(60_000);
+
+    await client.replaceAll([["h1"], [oversized]]);
+
+    const sentValues = valuesMock.update.mock.calls[0][0].requestBody.values;
+    expect(sentValues[1][0].length).toBeLessThanOrEqual(50_000);
+    expect(sentValues[1][0].endsWith("truncated, too long for a sheet cell]")).toBe(true);
+  });
+
+  it("truncates a cell over the limit in updateRow and appendRow", async () => {
+    const client = newClient("Competitor Ads");
+    const oversized = "y".repeat(60_000);
+
+    await client.updateRow(3, [oversized]);
+    const updateValues = valuesMock.update.mock.calls[0][0].requestBody.values;
+    expect(updateValues[0][0].length).toBeLessThanOrEqual(50_000);
+
+    await client.appendRow([oversized]);
+    const appendValues = valuesMock.append.mock.calls[0][0].requestBody.values;
+    expect(appendValues[0][0].length).toBeLessThanOrEqual(50_000);
+  });
+
+  it("leaves normal-length cells and non-string values untouched", async () => {
+    const client = newClient("Competitor Ads");
+    await client.replaceAll([["Competitor", "Reach"], ["Acme", 12345]]);
+
+    const sentValues = valuesMock.update.mock.calls[0][0].requestBody.values;
+    expect(sentValues).toEqual([["Competitor", "Reach"], ["Acme", 12345]]);
+  });
+});
+
 describe("SheetsClient auto-creates a missing tab", () => {
   it("creates the tab when it doesn't exist yet", async () => {
     spreadsheetsMock.get.mockResolvedValueOnce({
