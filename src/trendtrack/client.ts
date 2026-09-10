@@ -4,6 +4,7 @@ import type {
   ListAdsParams,
   TrendtrackAdDetail,
   TrendtrackAdListResponse,
+  TrendtrackEnvelope,
   TrendtrackMediaUrlResponse,
 } from "./types.js";
 
@@ -85,19 +86,25 @@ export class TrendtrackClient {
     }
   }
 
-  /** GET /v1/ads/{adId} */
+  /**
+   * GET /v1/ads/{adId}
+   * Single-resource responses are wrapped as `{ requestId, data }` - unwrap
+   * here so every caller works with the ad object directly.
+   */
   async getAdDetail(adId: string): Promise<TrendtrackAdDetail> {
-    return this.http.request<TrendtrackAdDetail>(`/v1/ads/${adId}`, {
-      method: "GET",
-      headers: this.authHeaders(),
-    });
+    const envelope = await this.http.request<TrendtrackEnvelope<TrendtrackAdDetail>>(
+      `/v1/ads/${adId}`,
+      { method: "GET", headers: this.authHeaders() },
+    );
+    return envelope.data;
   }
 
-  /** GET /v1/ads/{adId}/media-url */
+  /** GET /v1/ads/{adId}/media-url - also wrapped as `{ requestId, data }`. */
   async getAdMediaUrl(adId: string): Promise<TrendtrackMediaUrlResponse> {
-    return this.http.request<TrendtrackMediaUrlResponse>(`/v1/ads/${adId}/media-url`, {
-      method: "GET",
-      headers: this.authHeaders(),
-    });
+    const envelope = await this.http.request<TrendtrackEnvelope<TrendtrackMediaUrlResponse>>(
+      `/v1/ads/${adId}/media-url`,
+      { method: "GET", headers: this.authHeaders() },
+    );
+    return envelope.data;
   }
 }

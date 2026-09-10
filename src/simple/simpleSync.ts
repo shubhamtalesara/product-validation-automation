@@ -69,7 +69,7 @@ async function fetchTopAdsForCompetitor(
         if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
           logger.info(`RAW ad detail for ${adId}`, { detail });
         }
-        let mediaUrl = detail.media?.url ?? "";
+        let mediaUrl = detail.media?.mediaUrl ?? "";
         let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
         try {
           const media = await trendtrack.getAdMediaUrl(adId);
@@ -87,16 +87,16 @@ async function fetchTopAdsForCompetitor(
           competitor: competitor.name,
           competitorLandingPage: competitor.landingPage,
           trendtrackAdId: adId,
-          headline: detail.content?.headline ?? "",
-          primaryText: detail.content?.primaryText ?? "",
-          cta: detail.content?.cta ?? "",
+          headline: detail.content?.title ?? "",
+          primaryText: detail.content?.body ?? "",
+          cta: detail.content?.callToAction ?? "",
           landingPageUrl: detail.content?.landingPageUrl ?? "",
-          mediaType: detail.media?.mediaType ?? "",
+          mediaType: detail.media?.type ?? "",
           mediaUrl,
           thumbnailUrl,
           reach: detail.metrics?.reach ?? reachOf(group.representative.summary),
           daysRunning: detail.daysRunning ?? group.representative.daysRunning ?? null,
-          rank: detail.rank ?? null,
+          rank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
         });
       } catch (err) {
         logger.error(`Failed to fetch detail for ad ${adId}, skipping`, {

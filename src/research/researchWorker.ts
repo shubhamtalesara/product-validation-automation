@@ -125,7 +125,7 @@ export class ResearchWorker {
     const detail = await this.deps.trendtrack.getAdDetail(adId);
 
     let storageUrl: string | null = null;
-    let mediaUrl: string | null = detail.media?.url ?? null;
+    let mediaUrl: string | null = detail.media?.mediaUrl ?? null;
     let thumbnailUrl: string | null = detail.media?.thumbnailUrl ?? null;
 
     try {
@@ -137,7 +137,7 @@ export class ResearchWorker {
           competitorId: competitor.id,
           trendtrackAdId: adId,
           mediaUrl,
-          mediaType: media.mediaType ?? detail.media?.mediaType,
+          mediaType: media.mediaType ?? detail.media?.type,
           filename: media.filename,
         });
         storageUrl = downloaded.storageUrl;
@@ -159,21 +159,24 @@ export class ResearchWorker {
         firstSeenAt: detail.firstSeenAt ? new Date(detail.firstSeenAt) : null,
         lastSeenAt: detail.lastSeenAt ? new Date(detail.lastSeenAt) : null,
         daysRunning: detail.daysRunning ?? null,
-        mediaType: detail.media?.mediaType ?? null,
+        mediaType: detail.media?.type ?? null,
         mediaUrl,
         thumbnailUrl,
         storageUrl,
-        primaryText: detail.content?.primaryText ?? null,
-        headline: detail.content?.headline ?? null,
-        cta: detail.content?.cta ?? null,
+        primaryText: detail.content?.body ?? null,
+        headline: detail.content?.title ?? null,
+        cta: detail.content?.callToAction ?? null,
         landingPageUrl: detail.content?.landingPageUrl ?? null,
         reach: detail.metrics?.reach ?? null,
         reachDelta1d: detail.metrics?.reachDelta1d ?? null,
         reachDelta7d: detail.metrics?.reachDelta7d ?? null,
         reachDelta30d: detail.metrics?.reachDelta30d ?? null,
-        currentRank: detail.rank ?? null,
-        rankDelta: detail.rankDelta ?? null,
-        transcript: detail.transcript ?? null,
+        currentRank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
+        rankDelta: detail.rank?.rankDelta ?? null,
+        transcript:
+          typeof detail.transcript === "string"
+            ? detail.transcript
+            : (detail.transcript?.fullText ?? null),
         creativeAnalysis:
           typeof detail.creativeAnalysis === "string"
             ? detail.creativeAnalysis
@@ -197,8 +200,8 @@ export class ResearchWorker {
         reachDelta1d: detail.metrics?.reachDelta1d ?? null,
         reachDelta7d: detail.metrics?.reachDelta7d ?? null,
         reachDelta30d: detail.metrics?.reachDelta30d ?? null,
-        currentRank: detail.rank ?? null,
-        rankDelta: detail.rankDelta ?? null,
+        currentRank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
+        rankDelta: detail.rank?.rankDelta ?? null,
         duplicateCount,
         validationScore,
         rawTrendtrackData: JSON.stringify(detail),

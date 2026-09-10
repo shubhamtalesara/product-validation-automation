@@ -92,15 +92,14 @@ const envSchema = z.object({
   // Misc
   DEFAULT_TIMEZONE: z.string().default("America/New_York"),
   LOG_LEVEL: z.string().default("info"),
-  // Temporary diagnostic: dumps the raw TrendTrack ad-detail/media-url
-  // responses to the log so field-mapping mismatches can be fixed against
-  // real data instead of guesswork. Defaults on for now; safe to leave off
-  // once simple-mode field mapping is confirmed correct.
+  // Diagnostic: dumps the raw TrendTrack ad-detail/media-url responses to
+  // the log. Off by default (verbose) - flip to "true" if a future
+  // response shape mismatch needs debugging again.
   LOG_RAW_TRENDTRACK_RESPONSES: z
     .string()
     .optional()
-    .transform((v) => v !== "false" && v !== "0")
-    .default("true"),
+    .transform((v) => v === "true" || v === "1")
+    .default("false"),
 });
 
 export type Env = z.infer<typeof envSchema>;

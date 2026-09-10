@@ -73,19 +73,25 @@ describe("TrendtrackClient", () => {
     expect(ids).toHaveLength(3);
   });
 
-  it("fetches ad detail", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(mockFetchOnce(200, { id: "ad1", daysRunning: 5 }));
+  it("fetches ad detail and unwraps the { requestId, data } envelope", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, { requestId: "req1", data: { id: "ad1", daysRunning: 5 } }),
+    );
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
     const detail = await client.getAdDetail("ad1");
     expect(detail.daysRunning).toBe(5);
+    expect(detail.id).toBe("ad1");
   });
 
-  it("fetches media url", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(mockFetchOnce(200, { mediaType: "video", url: "u", mediaUrl: "u" }));
+  it("fetches media url and unwraps the { requestId, data } envelope", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, {
+        requestId: "req1",
+        data: { mediaType: "video", url: "u", mediaUrl: "u" },
+      }),
+    );
     global.fetch = fetchMock as unknown as typeof fetch;
 
     const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
