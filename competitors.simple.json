@@ -3,8 +3,8 @@
     { "url": "https://vitalbloo.com/pages/mb", "type": "PDP", "brandName": "vitalbloo" }
   ],
   "competitors": [
-    { "name": "truehealthic", "landingPage": "http://vitalbloo.com/" },
-    { "name": "vitalbloo", "landingPage": "pureveen.com" },
+    { "name": "truehealthic", "landingPage": "truehealthic.com" },
+    { "name": "vitalbloo", "landingPage": "vitalbloo.com" },
     { "name": "feelific", "landingPage": "feelific.com" }
   ]
 }
