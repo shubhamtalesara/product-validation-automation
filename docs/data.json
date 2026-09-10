@@ -1,0 +1,72 @@
+{
+  "generatedAt": "2026-09-10T06:15:49.130Z",
+  "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
+  "competitors": [
+    {
+      "name": "Mary tank",
+      "landingPage": "https://mary-tanks.com/",
+      "error": null,
+      "ads": [
+        {
+          "competitor": "Mary tank",
+          "competitorLandingPage": "https://mary-tanks.com/",
+          "trendtrackAdId": "facebook_1023785246746516",
+          "headline": "",
+          "primaryText": "",
+          "cta": "",
+          "landingPageUrl": "",
+          "mediaType": "",
+          "mediaUrl": "",
+          "thumbnailUrl": "",
+          "reach": null,
+          "daysRunning": 125,
+          "rank": null
+        }
+      ]
+    },
+    {
+      "name": "Avouria",
+      "landingPage": "http://avouria.com",
+      "error": null,
+      "ads": [
+        {
+          "competitor": "Avouria",
+          "competitorLandingPage": "http://avouria.com",
+          "trendtrackAdId": "facebook_996053886693834",
+          "headline": "",
+          "primaryText": "",
+          "cta": "",
+          "landingPageUrl": "",
+          "mediaType": "",
+          "mediaUrl": "",
+          "thumbnailUrl": "",
+          "reach": 7495,
+          "daysRunning": 103,
+          "rank": null
+        }
+      ]
+    },
+    {
+      "name": "Simply Elsie",
+      "landingPage": "http://simply-elsie.co.uk",
+      "error": null,
+      "ads": [
+        {
+          "competitor": "Simply Elsie",
+          "competitorLandingPage": "http://simply-elsie.co.uk",
+          "trendtrackAdId": "facebook_1907425509924445",
+          "headline": "",
+          "primaryText": "",
+          "cta": "",
+          "landingPageUrl": "",
+          "mediaType": "",
+          "mediaUrl": "",
+          "thumbnailUrl": "",
+          "reach": 126339,
+          "daysRunning": 58,
+          "rank": null
+        }
+      ]
+    }
+  ]
+}
