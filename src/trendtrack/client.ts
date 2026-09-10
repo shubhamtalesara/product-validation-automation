@@ -107,4 +107,24 @@ export class TrendtrackClient {
     );
     return envelope.data;
   }
+
+  /**
+   * GET /v1/lookup?q=... - resolves a brand name, domain, Facebook page ID,
+   * or Instagram handle to the linked brandtracker/advertiser/shop resource
+   * IDs. Zero-credit per TrendTrack's docs. Response shape isn't nailed
+   * down field-by-field yet (their docs site isn't reachable from this
+   * environment) - returned as a loose record; `extractAdvertiserIds` in
+   * simple/resolveAdvertisers.ts does defensive parsing against it.
+   */
+  async lookup(query: string): Promise<Record<string, unknown>> {
+    const raw = await this.http.request<Record<string, unknown>>("/v1/lookup", {
+      method: "GET",
+      headers: this.authHeaders(),
+      query: { q: query },
+    });
+    // Unwrap { requestId, data } if present (matches every other endpoint
+    // we've confirmed), otherwise trust the response is unwrapped already.
+    const data = raw?.data;
+    return data && typeof data === "object" ? (data as Record<string, unknown>) : raw;
+  }
 }

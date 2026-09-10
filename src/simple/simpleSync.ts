@@ -9,7 +9,7 @@ import type { TrendtrackAdSummary } from "../trendtrack/types.js";
 import { dedupeCreatives, type DedupCandidate, type DedupGroup } from "../research/dedupe.js";
 import { SheetsClient, type SheetsCredentials } from "../sheets/sheetsClient.js";
 import { loadSimpleConfig, type SimpleCompetitor } from "./config.js";
-import { extractDomain } from "./domain.js";
+import { resolveAdvertiserIds } from "./resolveAdvertisers.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
 
 const logger = createLogger("simple-sync");
@@ -24,7 +24,7 @@ function reachOf(summary: TrendtrackAdSummary): number | null {
 interface CompetitorResult {
   name: string;
   landingPage: string;
-  advertiserId: string;
+  advertiserIds: string[];
   error: string | null;
   ads: SimpleAdRow[];
 }
@@ -33,64 +33,73 @@ type CompetitorCandidate = DedupCandidate & { summary: TrendtrackAdSummary };
 
 interface CandidateGathering {
   competitor: SimpleCompetitor;
-  advertiserId: string;
+  advertiserIds: string[];
   groups: DedupGroup<CompetitorCandidate>[];
   error: string | null;
 }
 
 /**
- * Fetches and dedupes one competitor's active ads into creative-concept
- * groups (cheap: list endpoint only, no per-ad detail calls yet). The pool
- * size is sized off the global total so every competitor gets a fair shot
- * at making the final cross-competitor ranking.
+ * Resolves a competitor's TrendTrack advertiser ID(s) - a single brand can
+ * run ads from more than one Facebook page - then fetches and dedupes
+ * active ads from ALL of them into one pooled set of creative-concept
+ * groups (cheap: list endpoint only, no per-ad detail calls yet). Pool size
+ * per advertiser is sized off the global total so every competitor gets a
+ * fair shot at making the final cross-competitor ranking.
  */
 async function gatherCandidateGroups(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
 ): Promise<CandidateGathering> {
-  const advertiserId = competitor.advertiserId ?? extractDomain(competitor.landingPage);
-  logger.info(`Fetching ads for ${competitor.name}`, { advertiserId });
+  const resolved = await resolveAdvertiserIds(trendtrack, competitor);
+  const advertiserIds = resolved.advertiserIds;
+  logger.info(`Fetching ads for ${competitor.name}`, { advertiserIds, source: resolved.source });
   const poolSize = Math.max(env.SIMPLE_TOTAL_AD_COUNT * 3, 50);
 
   try {
-    const summaries: TrendtrackAdSummary[] = [];
-    for await (const ad of trendtrack.paginateAdvertiserAds(
-      advertiserId,
-      { status: "active", sortBy: "reach", order: "desc" },
-      poolSize,
-    )) {
-      summaries.push(ad);
-    }
-    logger.info(`Retrieved ${summaries.length} active ads for ${competitor.name}`);
-    if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
-      const distinctCollationIds = new Set(summaries.map((s) => s.collationId ?? null)).size;
-      logger.info(`RAW list summary sample for ${competitor.name}`, {
-        distinctCollationIds,
-        totalSummaries: summaries.length,
-        firstThree: summaries.slice(0, 3),
-      });
+    const allCandidates: CompetitorCandidate[] = [];
+    for (const advertiserId of advertiserIds) {
+      const summaries: TrendtrackAdSummary[] = [];
+      for await (const ad of trendtrack.paginateAdvertiserAds(
+        advertiserId,
+        { status: "active", sortBy: "reach", order: "desc" },
+        poolSize,
+      )) {
+        summaries.push(ad);
+      }
+      logger.info(`Retrieved ${summaries.length} active ads for ${competitor.name}`, { advertiserId });
+      if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
+        const distinctCollationIds = new Set(summaries.map((s) => s.collationId ?? null)).size;
+        logger.info(`RAW list summary sample for ${competitor.name}`, {
+          advertiserId,
+          distinctCollationIds,
+          totalSummaries: summaries.length,
+          firstThree: summaries.slice(0, 3),
+        });
+      }
+      for (const s of summaries) {
+        allCandidates.push({
+          id: s.id,
+          collationId: s.collationId ?? null,
+          advertiserId,
+          reach: reachOf(s),
+          daysRunning: s.daysRunning ?? null,
+          summary: s,
+        });
+      }
     }
 
-    const candidates: CompetitorCandidate[] = summaries.map((s) => ({
-      id: s.id,
-      collationId: s.collationId ?? null,
-      advertiserId,
-      reach: reachOf(s),
-      daysRunning: s.daysRunning ?? null,
-      summary: s,
-    }));
-    const groups = dedupeCreatives(candidates);
+    const groups = dedupeCreatives(allCandidates);
     logger.info(`Deduplicated to ${groups.length} unique creative concepts for ${competitor.name}`);
 
-    return { competitor, advertiserId, groups, error: null };
+    return { competitor, advertiserIds, groups, error: null };
   } catch (err) {
     const message = toSanitizedMessage(err);
-    logger.error(`Could not fetch ads for ${competitor.name}`, { advertiserId, error: message });
+    logger.error(`Could not fetch ads for ${competitor.name}`, { advertiserIds, error: message });
     return {
       competitor,
-      advertiserId,
+      advertiserIds,
       groups: [],
-      error: `Could not find TrendTrack ads for "${advertiserId}" (from ${competitor.landingPage}). If this domain isn't the right TrendTrack advertiser ID, look it up in TrendTrack's dashboard and add "advertiserId" for this competitor in competitors.simple.json. (${message})`,
+      error: `Could not find TrendTrack ads for ${JSON.stringify(advertiserIds)} (from ${competitor.landingPage}). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add "advertiserId" for this competitor in competitors.simple.json. (${message})`,
     };
   }
 }
@@ -228,7 +237,7 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
       {
         name: g.competitor.name,
         landingPage: g.competitor.landingPage,
-        advertiserId: g.advertiserId,
+        advertiserIds: g.advertiserIds,
         error: g.error,
         ads: [],
       },
