@@ -95,17 +95,11 @@ const envSchema = z.object({
   // Misc
   DEFAULT_TIMEZONE: z.string().default("America/New_York"),
   LOG_LEVEL: z.string().default("info"),
-  // Diagnostic: dumps raw TrendTrack list/detail/media-url responses to the
-  // log, plus a distinct-collationId count per competitor (to tell apart
-  // "TrendTrack genuinely reports one dominant creative" from "our summary
-  // objects lack enough info and got merged incorrectly"). Temporarily on
-  // by default while confirming the dedup fix against the real API; safe
-  // to flip back to "false" afterward.
-  LOG_RAW_TRENDTRACK_RESPONSES: z
-    .string()
-    .optional()
-    .transform((v) => v !== "false" && v !== "0")
-    .default("true"),
+  // Diagnostic: dumps raw TrendTrack list/detail/media-url/lookup responses
+  // to the log. Off by default now that every response shape is confirmed
+  // against TrendTrack's published API reference; set to "true" to debug a
+  // specific competitor.
+  LOG_RAW_TRENDTRACK_RESPONSES: boolFromString,
 });
 
 export type Env = z.infer<typeof envSchema>;

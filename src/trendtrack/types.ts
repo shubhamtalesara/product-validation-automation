@@ -97,6 +97,35 @@ export interface TrendtrackMediaUrlResponse {
   filename?: string;
 }
 
+export interface TrendtrackLookupMatch {
+  id: string;
+  name?: string;
+  facebookPageId?: string;
+  domain?: string;
+}
+
+/** One row of GET /v1/lookup's `data` array. */
+export interface TrendtrackLookupResult {
+  type: "brandtracker" | "advertiser" | "shop";
+  matchType: "exact" | "fuzzy";
+  matchField: "name" | "domain" | "facebookPageId" | "instagramHandle";
+  score: number;
+  brandtracker?: TrendtrackLookupMatch;
+  advertiser?: TrendtrackLookupMatch;
+  shop?: TrendtrackLookupMatch;
+  signals?: { hasAdvertiser?: boolean; [key: string]: unknown };
+}
+
+/** One row of GET /v1/shops/{shopId}/advertisers's `data` array. */
+export interface TrendtrackShopAdvertiser {
+  id: string;
+  platform?: string;
+  facebookPageId?: string;
+  name?: string;
+  isPrimary?: boolean;
+  activeAds?: number;
+}
+
 export type TrendtrackSortBy = "longestRunning" | "reach" | "duplicates" | "newest" | "createdAt";
 
 export interface ListAdsParams {

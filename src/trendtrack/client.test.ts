@@ -99,6 +99,55 @@ describe("TrendtrackClient", () => {
     expect(media.mediaType).toBe("video");
   });
 
+  it("resolves lookup results and passes through type/limit query params", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, {
+        requestId: "req-lookup",
+        data: [
+          {
+            type: "shop",
+            matchType: "exact",
+            matchField: "domain",
+            score: 1,
+            shop: { id: "shop-1", domain: "acme.com", name: "Acme" },
+          },
+        ],
+      }),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
+    const results = await client.lookup("acme.com", { type: "shop", limit: 5 });
+
+    expect(results).toHaveLength(1);
+    expect(results[0].shop?.id).toBe("shop-1");
+    const calledUrl = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(calledUrl.searchParams.get("q")).toBe("acme.com");
+    expect(calledUrl.searchParams.get("type")).toBe("shop");
+    expect(calledUrl.searchParams.get("limit")).toBe("5");
+  });
+
+  it("fetches shop advertisers", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, {
+        requestId: "req-adv",
+        data: [
+          { id: "adv-1", facebookPageId: "111", isPrimary: true },
+          { id: "adv-2", facebookPageId: "222", isPrimary: false },
+        ],
+      }),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
+    const advertisers = await client.getShopAdvertisers("shop-1");
+
+    expect(advertisers).toHaveLength(2);
+    expect(advertisers.map((a) => a.facebookPageId)).toEqual(["111", "222"]);
+    const calledUrl = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(calledUrl.pathname).toBe("/v1/shops/shop-1/advertisers");
+  });
+
   it("throws PermanentError on 4xx without retrying", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockFetchOnce(404, { message: "not found" }));
     global.fetch = fetchMock as unknown as typeof fetch;

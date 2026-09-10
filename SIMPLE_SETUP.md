@@ -112,17 +112,32 @@ After this, it re-runs automatically every day at 6am UTC — you never have
 to do anything again unless you want to change the 3 competitors (step 4)
 or force a refresh right now (step 6).
 
+## How it finds every one of a competitor's ad accounts
+
+You only give it a website — not a TrendTrack ID. Under the hood, for each
+competitor it: looks up the domain to find TrendTrack's record of that
+brand's website, then asks TrendTrack for every Facebook advertiser page
+linked to that website (some brands run ads from more than one Facebook
+page/ad account), then pools the ads from all of them together before
+picking the top performers. So if a brand advertises from 2 Facebook
+pages, both are covered automatically — you never have to hunt for a
+"page ID" yourself.
+
 ## What if a competitor's ads don't show up?
 
-If TrendTrack doesn't recognize a competitor's website domain directly,
+If TrendTrack doesn't recognize a competitor's website domain at all,
 that row's dashboard section will show a plain-English error explaining
-exactly that, and telling you to open the failing competitor's page on
-TrendTrack's own website, find their advertiser ID there, and add it to
+exactly that. As a manual override, you can open the competitor's page on
+TrendTrack's own website, find their advertiser ID there, and pin it in
 `competitors.simple.json` like this:
 
 ```json
 { "name": "Competitor 1", "landingPage": "https://competitor1.com", "advertiserId": "the-id-from-trendtrack" }
 ```
+
+Note that a pinned `advertiserId` locks the sync to that one page only —
+it skips the automatic "find every page" step above. Only add it if the
+automatic lookup genuinely can't find the competitor.
 
 ---
 

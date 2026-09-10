@@ -5,7 +5,9 @@ import type {
   TrendtrackAdDetail,
   TrendtrackAdListResponse,
   TrendtrackEnvelope,
+  TrendtrackLookupResult,
   TrendtrackMediaUrlResponse,
+  TrendtrackShopAdvertiser,
 } from "./types.js";
 
 const logger = createLogger("trendtrack");
@@ -110,21 +112,31 @@ export class TrendtrackClient {
 
   /**
    * GET /v1/lookup?q=... - resolves a brand name, domain, Facebook page ID,
-   * or Instagram handle to the linked brandtracker/advertiser/shop resource
-   * IDs. Zero-credit per TrendTrack's docs. Response shape isn't nailed
-   * down field-by-field yet (their docs site isn't reachable from this
-   * environment) - returned as a loose record; `extractAdvertiserIds` in
-   * simple/resolveAdvertisers.ts does defensive parsing against it.
+   * or Instagram handle to candidate brandtracker/advertiser/shop matches.
+   * Zero-credit. Returns `data`, an array of `{ type, matchType, score,
+   * brandtracker?, advertiser?, shop? }` rows - exact matches first.
    */
-  async lookup(query: string): Promise<Record<string, unknown>> {
-    const raw = await this.http.request<Record<string, unknown>>("/v1/lookup", {
+  async lookup(
+    query: string,
+    options: { type?: "auto" | "brandtracker" | "advertiser" | "shop"; limit?: number } = {},
+  ): Promise<TrendtrackLookupResult[]> {
+    const envelope = await this.http.request<{ data?: TrendtrackLookupResult[] }>("/v1/lookup", {
       method: "GET",
       headers: this.authHeaders(),
-      query: { q: query },
+      query: { q: query, type: options.type, limit: options.limit },
     });
-    // Unwrap { requestId, data } if present (matches every other endpoint
-    // we've confirmed), otherwise trust the response is unwrapped already.
-    const data = raw?.data;
-    return data && typeof data === "object" ? (data as Record<string, unknown>) : raw;
+    return envelope?.data ?? [];
+  }
+
+  /**
+   * GET /v1/shops/{shopId}/advertisers - every Facebook advertiser page
+   * linked to one shop, so a multi-page brand's ads can be pooled together.
+   */
+  async getShopAdvertisers(shopId: string): Promise<TrendtrackShopAdvertiser[]> {
+    const envelope = await this.http.request<{ data?: TrendtrackShopAdvertiser[] }>(
+      `/v1/shops/${encodeURIComponent(shopId)}/advertisers`,
+      { method: "GET", headers: this.authHeaders() },
+    );
+    return envelope?.data ?? [];
   }
 }
