@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const valuesMock = {
   get: vi.fn().mockResolvedValue({ data: { values: [] } }),
@@ -7,9 +7,15 @@ const valuesMock = {
   clear: vi.fn().mockResolvedValue({ data: {} }),
 };
 
+const spreadsheetsMock = {
+  get: vi.fn().mockResolvedValue({ data: { sheets: [{ properties: { title: "Competitor Ads" } }] } }),
+  batchUpdate: vi.fn().mockResolvedValue({ data: {} }),
+  values: valuesMock,
+};
+
 vi.mock("googleapis", () => ({
   google: {
-    sheets: () => ({ spreadsheets: { values: valuesMock } }),
+    sheets: () => ({ spreadsheets: spreadsheetsMock }),
   },
 }));
 
@@ -29,6 +35,17 @@ function newClient(sheetTab: string) {
     sheetTab,
   });
 }
+
+beforeEach(() => {
+  vi.clearAllMocks();
+  spreadsheetsMock.get.mockResolvedValue({
+    data: { sheets: [{ properties: { title: "Competitor Ads" } }] },
+  });
+  valuesMock.get.mockResolvedValue({ data: { values: [] } });
+  valuesMock.append.mockResolvedValue({
+    data: { updates: { updatedRange: "'Competitor Ads'!A2:K2" } },
+  });
+});
 
 describe("SheetsClient range quoting", () => {
   it("quotes a tab name containing spaces so the Sheets API can parse the range", async () => {
@@ -75,5 +92,48 @@ describe("SheetsClient range quoting", () => {
     expect(valuesMock.get).toHaveBeenCalledWith(
       expect.objectContaining({ range: "'Bob''s Sheet'" }),
     );
+  });
+});
+
+describe("SheetsClient auto-creates a missing tab", () => {
+  it("creates the tab when it doesn't exist yet", async () => {
+    spreadsheetsMock.get.mockResolvedValueOnce({
+      data: { sheets: [{ properties: { title: "Sheet1" } }] },
+    });
+    const client = newClient("Competitor Ads");
+
+    await client.getAllRows();
+
+    expect(spreadsheetsMock.batchUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestBody: {
+          requests: [{ addSheet: { properties: { title: "Competitor Ads" } } }],
+        },
+      }),
+    );
+  });
+
+  it("does not create the tab when it already exists", async () => {
+    const client = newClient("Competitor Ads");
+    await client.getAllRows();
+    expect(spreadsheetsMock.batchUpdate).not.toHaveBeenCalled();
+  });
+
+  it("only checks once per client instance across multiple calls", async () => {
+    const client = newClient("Competitor Ads");
+    await client.getAllRows();
+    await client.getAllRows();
+    await client.writeHeader(["h1"]);
+    expect(spreadsheetsMock.get).toHaveBeenCalledTimes(1);
+  });
+
+  it("retries the check on a later call if it failed the first time", async () => {
+    spreadsheetsMock.get.mockRejectedValueOnce(new Error("boom"));
+    const client = newClient("Competitor Ads");
+
+    await expect(client.getAllRows()).rejects.toThrow();
+    await client.getAllRows();
+
+    expect(spreadsheetsMock.get).toHaveBeenCalledTimes(2);
   });
 });

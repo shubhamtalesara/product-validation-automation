@@ -90,8 +90,40 @@ export class SheetsClient {
     });
   }
 
+  private ensuredTab: Promise<void> | null = null;
+
+  /**
+   * A range referencing a tab that doesn't exist yet fails with
+   * "Unable to parse range", not a clearer "sheet not found" error. Rather
+   * than make that a manual setup step, create the tab on first use if it's
+   * missing (e.g. a brand new spreadsheet only has a default "Sheet1").
+   */
+  private async ensureTabExists(): Promise<void> {
+    if (!this.ensuredTab) {
+      this.ensuredTab = (async () => {
+        const meta = await this.sheets.spreadsheets.get({
+          spreadsheetId: this.spreadsheetId,
+          fields: "sheets.properties.title",
+        });
+        const titles = (meta.data.sheets ?? []).map((s) => s.properties?.title);
+        if (!titles.includes(this.sheetTab)) {
+          await this.sheets.spreadsheets.batchUpdate({
+            spreadsheetId: this.spreadsheetId,
+            requestBody: { requests: [{ addSheet: { properties: { title: this.sheetTab } } }] },
+          });
+          logger.info(`Created missing sheet tab "${this.sheetTab}"`);
+        }
+      })().catch((err) => {
+        this.ensuredTab = null; // let a later call retry instead of caching a failure forever
+        throw err;
+      });
+    }
+    return this.ensuredTab;
+  }
+
   /** Reads the full used range of the configured tab as a 2D array of strings. */
   async getAllRows(): Promise<string[][]> {
+    await this.ensureTabExists();
     const response = await this.wrapErrors(
       this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
@@ -103,6 +135,7 @@ export class SheetsClient {
   }
 
   async updateRow(rowNumber: number, values: (string | number)[]): Promise<void> {
+    await this.ensureTabExists();
     const range = `${this.quotedTab}!A${rowNumber}`;
     await this.wrapErrors(
       this.sheets.spreadsheets.values.update({
@@ -117,6 +150,7 @@ export class SheetsClient {
 
   /** Appends a row and returns the 1-indexed row number it landed on. */
   async appendRow(values: (string | number)[]): Promise<number> {
+    await this.ensureTabExists();
     const response = await this.wrapErrors(
       this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
@@ -134,6 +168,7 @@ export class SheetsClient {
 
   /** Replaces the entire tab's contents (header + all rows) in one call. */
   async replaceAll(rows: (string | number)[][]): Promise<void> {
+    await this.ensureTabExists();
     await this.wrapErrors(
       this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
@@ -153,6 +188,7 @@ export class SheetsClient {
   }
 
   async writeHeader(headers: string[]): Promise<void> {
+    await this.ensureTabExists();
     await this.wrapErrors(
       this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
