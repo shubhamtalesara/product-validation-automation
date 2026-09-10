@@ -73,6 +73,16 @@ export class SheetsClient {
     this.sheetTab = options.sheetTab;
   }
 
+  /**
+   * A1-notation ranges must single-quote the sheet name whenever it
+   * contains a space or special character (e.g. "Competitor Ads"), or the
+   * Sheets API rejects the whole call with "Unable to parse range". Quoting
+   * unconditionally is always valid, even for simple names like "Research".
+   */
+  private get quotedTab(): string {
+    return `'${this.sheetTab.replace(/'/g, "''")}'`;
+  }
+
   private wrapErrors<T>(promise: Promise<T>, action: string): Promise<T> {
     return promise.catch((err) => {
       logger.error(`Sheets API call failed: ${action}`, { error: toSanitizedMessage(err) });
@@ -85,7 +95,7 @@ export class SheetsClient {
     const response = await this.wrapErrors(
       this.sheets.spreadsheets.values.get({
         spreadsheetId: this.spreadsheetId,
-        range: this.sheetTab,
+        range: this.quotedTab,
       }),
       "getAllRows",
     );
@@ -93,7 +103,7 @@ export class SheetsClient {
   }
 
   async updateRow(rowNumber: number, values: (string | number)[]): Promise<void> {
-    const range = `${this.sheetTab}!A${rowNumber}`;
+    const range = `${this.quotedTab}!A${rowNumber}`;
     await this.wrapErrors(
       this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
@@ -110,7 +120,7 @@ export class SheetsClient {
     const response = await this.wrapErrors(
       this.sheets.spreadsheets.values.append({
         spreadsheetId: this.spreadsheetId,
-        range: this.sheetTab,
+        range: this.quotedTab,
         valueInputOption: "USER_ENTERED",
         insertDataOption: "INSERT_ROWS",
         requestBody: { values: [values] },
@@ -127,14 +137,14 @@ export class SheetsClient {
     await this.wrapErrors(
       this.sheets.spreadsheets.values.clear({
         spreadsheetId: this.spreadsheetId,
-        range: this.sheetTab,
+        range: this.quotedTab,
       }),
       "clear",
     );
     await this.wrapErrors(
       this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `${this.sheetTab}!A1`,
+        range: `${this.quotedTab}!A1`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: rows },
       }),
@@ -146,7 +156,7 @@ export class SheetsClient {
     await this.wrapErrors(
       this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
-        range: `${this.sheetTab}!A1`,
+        range: `${this.quotedTab}!A1`,
         valueInputOption: "USER_ENTERED",
         requestBody: { values: [headers] },
       }),
