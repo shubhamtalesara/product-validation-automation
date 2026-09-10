@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-10T10:11:38.583Z",
+  "generatedAt": "2026-09-10T10:18:36.377Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
       "name": "Mary tank",
       "landingPage": "https://mary-tanks.com/",
-      "error": "Could not find TrendTrack ads for [\"mary-tanks.com\"] (from https://mary-tanks.com/). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 404 for GET /v1/advertisers/mary-tanks.com/ads: {\"error\":{\"code\":\"not_found\",\"message\":\"Advertiser not found.\",\"requestId\":\"2d9ddb6a-a71f-409e-aeb2-5651427570a6\"}})",
+      "error": "Could not find TrendTrack ads for [\"mary-tanks.com\"] (from https://mary-tanks.com/). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 404 for GET /v1/advertisers/mary-tanks.com/ads: {\"error\":{\"code\":\"not_found\",\"message\":\"Advertiser not found.\",\"requestId\":\"ac6e7223-a82a-4813-9be0-8de019b5499b\"}})",
       "ads": []
     },
     {
@@ -422,44 +422,6 @@
         {
           "competitor": "Simply Elsie",
           "competitorLandingPage": "http://simply-elsie.co.uk",
-          "facebookPageName": "Elsie's Vests",
-          "adSet": "Ad Set 7 (Static)",
-          "trendtrackAdId": "facebook_1013610688267163",
-          "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/elsies-vests-S23x8p",
-          "headline": "Proof that cats and dogs really can run the world together.",
-          "primaryText": "Proof that cats and dogs really can run the world together.",
-          "cta": "LIKE PAGE",
-          "landingPageUrl": "https://www.facebook.com/1107800459077831",
-          "landingPageType": "1107800459077831",
-          "mediaType": "image",
-          "mediaUrl": "https://medias.trendtrack.io/facebook/image/1c8a0ff12d19bb779363a89d14f109757b616ba6ca98b118bc2a8d01e8fbef2c.jpg",
-          "thumbnailUrl": "",
-          "reach": 4441,
-          "daysRunning": 145,
-          "rank": 4
-        },
-        {
-          "competitor": "Simply Elsie",
-          "competitorLandingPage": "http://simply-elsie.co.uk",
-          "facebookPageName": "Elsie's Vests",
-          "adSet": "Ad Set 7 (Static)",
-          "trendtrackAdId": "facebook_1257968736489429",
-          "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/elsies-vests-bmg4sE",
-          "headline": "Proof that cats and dogs really can run the world together.",
-          "primaryText": "Proof that cats and dogs really can run the world together. 😍",
-          "cta": "LIKE PAGE",
-          "landingPageUrl": "https://www.facebook.com/1107800459077831",
-          "landingPageType": "1107800459077831",
-          "mediaType": "image",
-          "mediaUrl": "https://medias.trendtrack.io/facebook/image/1c8a0ff12d19bb779363a89d14f109757b616ba6ca98b118bc2a8d01e8fbef2c.jpg",
-          "thumbnailUrl": "",
-          "reach": 2780,
-          "daysRunning": 145,
-          "rank": 6
-        },
-        {
-          "competitor": "Simply Elsie",
-          "competitorLandingPage": "http://simply-elsie.co.uk",
           "facebookPageName": "Janet Pemberton",
           "adSet": "Ad Set 3 (Video)",
           "trendtrackAdId": "facebook_2298008704069627",
@@ -589,6 +551,44 @@
           "reach": 1292,
           "daysRunning": 42,
           "rank": 13
+        },
+        {
+          "competitor": "Simply Elsie",
+          "competitorLandingPage": "http://simply-elsie.co.uk",
+          "facebookPageName": "Elsie's Vests",
+          "adSet": "Ad Set 7 (Static)",
+          "trendtrackAdId": "facebook_1573256357770169",
+          "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/elsies-vests-EYu6v6",
+          "headline": "Discover our best-selling tank with a built-in bra that let's you go…",
+          "primaryText": "Discover our best-selling tank with a built-in bra that let's you go braless instantly! Say goodbye to digging straps, bra bands that hurt, straps that slip, bra lines, and hello to smooth, all-day comfort. Buy 2 Get 1 Free At Up To 70% Off!",
+          "cta": "SHOP NOW",
+          "landingPageUrl": "https://simply-elsie.co.uk/",
+          "landingPageType": "Home",
+          "mediaType": "image",
+          "mediaUrl": "https://medias.trendtrack.io/facebook/image/43e8816d2c99265cc8f2cd964d03824d42ccfb26020773f46e031335505a403d.png",
+          "thumbnailUrl": "",
+          "reach": 1266,
+          "daysRunning": 42,
+          "rank": 8
+        },
+        {
+          "competitor": "Simply Elsie",
+          "competitorLandingPage": "http://simply-elsie.co.uk",
+          "facebookPageName": "Elsie's Vests",
+          "adSet": "Ad Set 7 (Static)",
+          "trendtrackAdId": "facebook_4424971024488722",
+          "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/elsies-vests-WQWNnB",
+          "headline": "After menopause, every bra that used to work stops working.",
+          "primaryText": "After menopause, every bra that used to work stops working. Simply Elsie changes that. No wire in your ribs. No hooks in your back. No band under your chest. No adjusting every ten minutes. Just soft, breathable support that moves with you all day, and after a few weeks, women tell us they forget they're wearing it. A seamless tank with the bra built in, made for bodies that changed after menopause. Buy 2 Get 1 Free At Up To 70% Off, with a 30-day perfect fit guarantee.\nsimply-elsie.co.uk",
+          "cta": "SHOP NOW",
+          "landingPageUrl": "https://simply-elsie.co.uk/",
+          "landingPageType": "Home",
+          "mediaType": "image",
+          "mediaUrl": "https://medias.trendtrack.io/facebook/image/091d7df2fe0a807c2f76fc2b592b1ad297e7d77f77d42f9a16b9427b22671f21.jpg",
+          "thumbnailUrl": "",
+          "reach": 1143,
+          "daysRunning": 33,
+          "rank": 10
         }
       ]
     }
