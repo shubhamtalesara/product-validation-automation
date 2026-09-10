@@ -28,21 +28,16 @@ describe("resolveAdvertiserIds", () => {
     expect(lookup).not.toHaveBeenCalled();
   });
 
-  it("resolves the shop from a domain lookup, then pools every linked advertiser page", async () => {
-    const lookup = vi.fn(async (_q: string, opts?: { type?: string }) => {
-      if (opts?.type === "shop") {
-        return [
-          {
-            type: "shop",
-            matchType: "exact",
-            matchField: "domain",
-            score: 1,
-            shop: { id: "shop-1", domain: "acme.com", name: "Acme" },
-          },
-        ] as TrendtrackLookupResult[];
-      }
-      return [];
-    });
+  it("makes a single auto lookup call, then pools every advertiser linked to the matched shop", async () => {
+    const lookup = vi.fn(async () => [
+      {
+        type: "shop",
+        matchType: "exact",
+        matchField: "domain",
+        score: 1,
+        shop: { id: "shop-1", domain: "acme.com", name: "Acme" },
+      },
+    ] as TrendtrackLookupResult[]);
     const getShopAdvertisers = vi.fn(async () => [
       { id: "adv-1", facebookPageId: "111", isPrimary: true },
       { id: "adv-2", facebookPageId: "222", isPrimary: false },
@@ -52,32 +47,52 @@ describe("resolveAdvertiserIds", () => {
     const result = await resolveAdvertiserIds(client, competitor);
     expect(result.source).toBe("lookup");
     expect(result.advertiserIds.sort()).toEqual(["111", "222"]);
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(lookup).toHaveBeenCalledWith("acme.com", { type: "auto", limit: 10 });
     expect(getShopAdvertisers).toHaveBeenCalledWith("shop-1");
   });
 
-  it("falls back to a direct advertiser lookup when the domain isn't an indexed shop", async () => {
-    const lookup = vi.fn(async (_q: string, opts?: { type?: string }) => {
-      if (opts?.type === "shop") return [];
-      if (opts?.type === "advertiser") {
-        return [
-          {
-            type: "advertiser",
-            matchType: "exact",
-            matchField: "domain",
-            score: 1,
-            advertiser: { id: "999", facebookPageId: "999", name: "Acme" },
-          },
-        ] as TrendtrackLookupResult[];
-      }
-      return [];
-    });
+  it("uses a direct advertiser match when the domain isn't an indexed shop", async () => {
+    const lookup = vi.fn(async () => [
+      {
+        type: "advertiser",
+        matchType: "exact",
+        matchField: "domain",
+        score: 1,
+        advertiser: { id: "999", facebookPageId: "999", name: "Acme" },
+      },
+    ] as TrendtrackLookupResult[]);
     const client = fakeClient({ lookup });
 
     const result = await resolveAdvertiserIds(client, competitor);
     expect(result).toEqual({ advertiserIds: ["999"], source: "lookup" });
   });
 
-  it("falls back to a domain guess when neither lookup type resolves anything", async () => {
+  it("falls back to a direct advertiser match when the matched shop has no linked advertisers", async () => {
+    const lookup = vi.fn(async () => [
+      {
+        type: "shop",
+        matchType: "exact",
+        matchField: "domain",
+        score: 1,
+        shop: { id: "shop-1", domain: "acme.com", name: "Acme" },
+      },
+      {
+        type: "advertiser",
+        matchType: "fuzzy",
+        matchField: "name",
+        score: 0.8,
+        advertiser: { id: "999", facebookPageId: "999", name: "Acme" },
+      },
+    ] as TrendtrackLookupResult[]);
+    const getShopAdvertisers = vi.fn(async () => []);
+    const client = fakeClient({ lookup, getShopAdvertisers });
+
+    const result = await resolveAdvertiserIds(client, competitor);
+    expect(result).toEqual({ advertiserIds: ["999"], source: "lookup" });
+  });
+
+  it("falls back to a domain guess when lookup finds nothing usable", async () => {
     const client = fakeClient({ lookup: async () => [] });
     const result = await resolveAdvertiserIds(client, competitor);
     expect(result).toEqual({ advertiserIds: ["acme.com"], source: "domain-guess" });

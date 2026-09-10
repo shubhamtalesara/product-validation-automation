@@ -112,6 +112,39 @@ After this, it re-runs automatically every day at 6am UTC — you never have
 to do anything again unless you want to change the 3 competitors (step 4)
 or force a refresh right now (step 6).
 
+## What's in the Google Sheet
+
+Each row is one winning ad, with:
+
+- **Competitor** / **Facebook Page Name** — which brand and which of their
+  Facebook pages ran it (a brand can run more than one page).
+- **Ad Set** — see "Ad set clubbing" below.
+- **Headline**, **Primary Text**, **CTA** — the ad copy. If TrendTrack has
+  no separate headline for an ad (common — most ads only have body copy),
+  the first sentence of the primary text is used instead so this column is
+  never blank.
+- **Landing Page** — the exact URL the ad sends people to.
+- **Landing Page Type** — a label for what kind of page it is: `PDP` for a
+  plain product page, `Collection` for a category page, `Home` for the
+  homepage, or the page's own slug (e.g. `5-reasons-why`) for an
+  advertorial/quiz/listicle-style page.
+- **Media Type** / **Media Link** — image or video, and the direct file URL.
+- **Impressions (Reach)**, **Days Running**, **Rank** — performance
+  signals. Every ad here has been running **at least 30 days** — anything
+  newer is excluded, since a 30+ day run is what separates a proven winner
+  from a fresh test.
+- **TrendTrack Ad ID** / **TrendTrack Preview Link** — click the preview
+  link to open the actual ad inside TrendTrack's own viewer.
+
+### Ad set clubbing
+
+The selected ads are also grouped into ready-to-launch ad sets (labeled
+"Ad Set 1 (Video)", "Ad Set 2 (Static)", etc.) so you can hand a whole
+sheet section straight to whoever builds your Meta campaigns: each set has
+at most 5 ads, and video ads are never grouped with static (image) ads in
+the same set — a leftover handful of one format still gets its own
+(smaller) set rather than being mixed in.
+
 ## How it finds every one of a competitor's ad accounts
 
 You only give it a website — not a TrendTrack ID. Under the hood, for each

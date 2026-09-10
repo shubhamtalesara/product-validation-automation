@@ -11,17 +11,22 @@ export interface ResolvedAdvertisers {
   source: "override" | "lookup" | "domain-guess";
 }
 
+function dedupeIds(ids: (string | undefined)[]): string[] {
+  return [...new Set(ids.filter((id): id is string => Boolean(id)))];
+}
+
 /**
  * Resolves every TrendTrack advertiser (Facebook page) ID for one configured
  * competitor. Priority:
  *  1. An explicit manual override in competitors.simple.json.
- *  2. TrendTrack's own resolution chain: `/v1/lookup?type=shop` finds the
- *     shop behind the domain, then `/v1/shops/{shopId}/advertisers` lists
- *     every Facebook page that shop runs ads from - a brand with two ad
- *     accounts gets both pooled together instead of only the first one.
- *  3. `/v1/lookup?type=advertiser` as a fallback when the domain isn't
- *     indexed as a shop but does resolve directly to an advertiser page.
- *  4. A same-as-domain guess as a last resort.
+ *  2. TrendTrack's own resolution chain: one `/v1/lookup?type=auto` call
+ *     finds the shop (and/or advertiser) behind the domain, then
+ *     `/v1/shops/{shopId}/advertisers` lists every Facebook page that shop
+ *     runs ads from - a brand with two ad accounts gets both pooled
+ *     together instead of only the first one. If the domain resolves
+ *     directly to an advertiser but isn't indexed as a shop, that match is
+ *     used instead.
+ *  3. A same-as-domain guess as a last resort.
  */
 export async function resolveAdvertiserIds(
   trendtrack: TrendtrackClient,
@@ -34,13 +39,12 @@ export async function resolveAdvertiserIds(
   const domain = extractDomain(competitor.landingPage);
 
   try {
-    const shopMatches = await trendtrack.lookup(domain, { type: "shop", limit: 5 });
-    const shopId = shopMatches.find((m) => m.shop?.id)?.shop?.id;
+    const matches = await trendtrack.lookup(domain, { type: "auto", limit: 10 });
+
+    const shopId = matches.find((m) => m.shop?.id)?.shop?.id;
     if (shopId) {
       const advertisers = await trendtrack.getShopAdvertisers(shopId);
-      const ids = [
-        ...new Set(advertisers.map((a) => a.facebookPageId ?? a.id).filter((id): id is string => Boolean(id))),
-      ];
+      const ids = dedupeIds(advertisers.map((a) => a.facebookPageId ?? a.id));
       if (ids.length > 0) {
         logger.info(`Resolved ${ids.length} advertiser page(s) for ${competitor.name} via shop lookup`, {
           domain,
@@ -49,19 +53,12 @@ export async function resolveAdvertiserIds(
         });
         return { advertiserIds: ids, source: "lookup" };
       }
-      logger.warn(`Shop ${shopId} for ${competitor.name} has no linked advertisers, trying direct lookup`, {
+      logger.warn(`Shop ${shopId} for ${competitor.name} has no linked advertisers, checking direct matches`, {
         domain,
       });
     }
 
-    const advertiserMatches = await trendtrack.lookup(domain, { type: "advertiser", limit: 5 });
-    const advertiserIds = [
-      ...new Set(
-        advertiserMatches
-          .map((m) => m.advertiser?.facebookPageId ?? m.advertiser?.id)
-          .filter((id): id is string => Boolean(id)),
-      ),
-    ];
+    const advertiserIds = dedupeIds(matches.map((m) => m.advertiser?.facebookPageId ?? m.advertiser?.id));
     if (advertiserIds.length > 0) {
       logger.info(`Resolved ${advertiserIds.length} advertiser page(s) for ${competitor.name} via direct lookup`, {
         domain,

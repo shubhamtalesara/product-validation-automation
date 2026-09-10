@@ -148,6 +148,24 @@ describe("TrendtrackClient", () => {
     expect(calledUrl.pathname).toBe("/v1/shops/shop-1/advertisers");
   });
 
+  it("creates an ad share link via POST and unwraps the envelope", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, {
+        requestId: "req-share",
+        data: { adId: "ad1", id: "share-1", shareUrl: "https://trendtrack.io/share/ad1" },
+      }),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
+    const share = await client.createAdShare("ad1");
+
+    expect(share.shareUrl).toBe("https://trendtrack.io/share/ad1");
+    expect(fetchMock.mock.calls[0][1]?.method).toBe("POST");
+    const calledUrl = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(calledUrl.pathname).toBe("/v1/ads/ad1/share");
+  });
+
   it("throws PermanentError on 4xx without retrying", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockFetchOnce(404, { message: "not found" }));
     global.fetch = fetchMock as unknown as typeof fetch;

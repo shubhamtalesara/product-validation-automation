@@ -10,11 +10,22 @@ import { dedupeCreatives, type DedupCandidate, type DedupGroup } from "../resear
 import { SheetsClient, type SheetsCredentials } from "../sheets/sheetsClient.js";
 import { loadSimpleConfig, type SimpleCompetitor } from "./config.js";
 import { resolveAdvertiserIds } from "./resolveAdvertisers.js";
+import { classifyLandingPage } from "./landingPageType.js";
+import { deriveHeadline } from "./headline.js";
+import { clubIntoAdSets } from "./adSets.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
 
 const logger = createLogger("simple-sync");
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
+
+/**
+ * A creative must have been running at least this many days to count as a
+ * validated winner rather than a fresh test TrendTrack just started
+ * tracking - ads younger than this are excluded before selection ever sees
+ * them.
+ */
+const MIN_DAYS_RUNNING = 30;
 
 function reachOf(summary: TrendtrackAdSummary): number | null {
   const metrics = summary["metrics"] as { reach?: number } | undefined;
@@ -42,9 +53,11 @@ interface CandidateGathering {
  * Resolves a competitor's TrendTrack advertiser ID(s) - a single brand can
  * run ads from more than one Facebook page - then fetches and dedupes
  * active ads from ALL of them into one pooled set of creative-concept
- * groups (cheap: list endpoint only, no per-ad detail calls yet). Pool size
- * per advertiser is sized off the global total so every competitor gets a
- * fair shot at making the final cross-competitor ranking.
+ * groups (cheap: list endpoint only, no per-ad detail calls yet). Drops any
+ * ad that hasn't run for at least MIN_DAYS_RUNNING days before it can ever
+ * be selected. Pool size per advertiser is sized off the global total so
+ * every competitor gets a fair shot at making the final cross-competitor
+ * ranking.
  */
 async function gatherCandidateGroups(
   trendtrack: TrendtrackClient,
@@ -66,7 +79,11 @@ async function gatherCandidateGroups(
       )) {
         summaries.push(ad);
       }
-      logger.info(`Retrieved ${summaries.length} active ads for ${competitor.name}`, { advertiserId });
+      const qualifying = summaries.filter((s) => (s.daysRunning ?? 0) >= MIN_DAYS_RUNNING);
+      logger.info(
+        `Retrieved ${summaries.length} active ads for ${competitor.name} (${qualifying.length} running ${MIN_DAYS_RUNNING}+ days)`,
+        { advertiserId },
+      );
       if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
         const distinctCollationIds = new Set(summaries.map((s) => s.collationId ?? null)).size;
         logger.info(`RAW list summary sample for ${competitor.name}`, {
@@ -76,7 +93,7 @@ async function gatherCandidateGroups(
           firstThree: summaries.slice(0, 3),
         });
       }
-      for (const s of summaries) {
+      for (const s of qualifying) {
         allCandidates.push({
           id: s.id,
           collationId: s.collationId ?? null,
@@ -104,7 +121,7 @@ async function gatherCandidateGroups(
   }
 }
 
-/** Fetches full ad detail + media for one selected creative concept. */
+/** Fetches full ad detail + media + a TrendTrack preview link for one selected creative concept. */
 async function enrichAd(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
@@ -116,6 +133,18 @@ async function enrichAd(
     if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
       logger.info(`RAW ad detail for ${adId}`, { detail });
     }
+
+    // Defense-in-depth: the list-endpoint summary already filtered on this,
+    // but re-check against the detail response in case the two disagree.
+    const daysRunning = detail.daysRunning ?? group.representative.daysRunning ?? null;
+    if ((daysRunning ?? 0) < MIN_DAYS_RUNNING) {
+      logger.info(
+        `Skipping ad ${adId} for ${competitor.name} - only running ${daysRunning ?? "an unknown number of"} days`,
+        { minDaysRunning: MIN_DAYS_RUNNING },
+      );
+      return null;
+    }
+
     let mediaUrl = detail.media?.mediaUrl ?? "";
     let thumbnailUrl = detail.media?.thumbnailUrl ?? "";
     try {
@@ -130,19 +159,35 @@ async function enrichAd(
         error: toSanitizedMessage(err),
       });
     }
+
+    let trendtrackPreviewUrl = "";
+    try {
+      const share = await trendtrack.createAdShare(adId);
+      trendtrackPreviewUrl = share.shareUrl ?? "";
+    } catch (err) {
+      logger.warn(`Could not create a TrendTrack preview link for ${adId}`, {
+        error: toSanitizedMessage(err),
+      });
+    }
+
+    const landingPageUrl = detail.content?.landingPageUrl ?? "";
     return {
       competitor: competitor.name,
       competitorLandingPage: competitor.landingPage,
+      facebookPageName: detail.advertiser?.name ?? "",
+      adSet: "",
       trendtrackAdId: adId,
-      headline: detail.content?.title ?? "",
+      trendtrackPreviewUrl,
+      headline: deriveHeadline(detail.content?.title, detail.content?.body),
       primaryText: detail.content?.body ?? "",
       cta: detail.content?.callToAction ?? "",
-      landingPageUrl: detail.content?.landingPageUrl ?? "",
+      landingPageUrl,
+      landingPageType: classifyLandingPage(landingPageUrl),
       mediaType: detail.media?.type ?? "",
       mediaUrl,
       thumbnailUrl,
       reach: detail.metrics?.reach ?? reachOf(group.representative.summary),
-      daysRunning: detail.daysRunning ?? group.representative.daysRunning ?? null,
+      daysRunning,
       rank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
     };
   } catch (err) {
@@ -250,6 +295,14 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
   }
 
   const results = [...resultsByCompetitor.values()];
+
+  // Club the selected ads into ready-to-launch ad sets (max 5 ads, never
+  // mixing video with static within one set) before writing anything out.
+  const allSelectedAds = results.flatMap((r) => r.ads).sort((a, b) => (b.reach ?? 0) - (a.reach ?? 0));
+  for (const adSetGroup of clubIntoAdSets(allSelectedAds)) {
+    for (const ad of adSetGroup.ads) ad.adSet = adSetGroup.label;
+  }
+
   await writeDataJson(results);
   await writeToSheet(results);
 

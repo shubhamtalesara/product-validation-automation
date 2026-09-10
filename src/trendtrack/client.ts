@@ -4,6 +4,7 @@ import type {
   ListAdsParams,
   TrendtrackAdDetail,
   TrendtrackAdListResponse,
+  TrendtrackAdShare,
   TrendtrackEnvelope,
   TrendtrackLookupResult,
   TrendtrackMediaUrlResponse,
@@ -138,5 +139,18 @@ export class TrendtrackClient {
       { method: "GET", headers: this.authHeaders() },
     );
     return envelope?.data ?? [];
+  }
+
+  /**
+   * POST /v1/ads/{adId}/share - creates (or returns the existing) public
+   * TrendTrack webapp preview link for one ad, so a human reviewer can open
+   * the original ad in TrendTrack without needing API access themselves.
+   */
+  async createAdShare(adId: string): Promise<TrendtrackAdShare> {
+    const envelope = await this.http.request<TrendtrackEnvelope<TrendtrackAdShare>>(
+      `/v1/ads/${encodeURIComponent(adId)}/share`,
+      { method: "POST", headers: this.authHeaders() },
+    );
+    return envelope.data;
   }
 }

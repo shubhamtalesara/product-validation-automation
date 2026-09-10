@@ -126,6 +126,16 @@ export interface TrendtrackShopAdvertiser {
   activeAds?: number;
 }
 
+/** `data` from POST /v1/ads/{adId}/share - a public TrendTrack webapp preview link for one ad. */
+export interface TrendtrackAdShare {
+  adId: string;
+  id: string;
+  slug?: string;
+  shareUrl: string;
+  sharePath?: string;
+  createdAt?: string;
+}
+
 export type TrendtrackSortBy = "longestRunning" | "reach" | "duplicates" | "newest" | "createdAt";
 
 export interface ListAdsParams {
