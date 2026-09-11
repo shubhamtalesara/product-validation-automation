@@ -46,25 +46,45 @@ describe("replaceBrandName", () => {
 });
 
 describe("replaceLinkMentions", () => {
-  it("replaces a bare domain mention", () => {
-    expect(replaceLinkMentions("Shop now at avouria.com today", "avouria.com", "mybrand.com")).toBe(
-      "Shop now at mybrand.com today",
-    );
+  it("replaces a bare domain mention with the full my-landing-page URL", () => {
+    expect(
+      replaceLinkMentions("Shop now at avouria.com today", "avouria.com", "https://mybrand.com/products/tank"),
+    ).toBe("Shop now at https://mybrand.com/products/tank today");
   });
 
-  it("preserves protocol and www prefix", () => {
-    expect(replaceLinkMentions("Visit https://www.avouria.com now", "avouria.com", "mybrand.com")).toBe(
-      "Visit https://www.mybrand.com now",
-    );
+  it("replaces the domain AND drops the competitor's own path, keeping only the my-landing-page URL", () => {
+    expect(
+      replaceLinkMentions(
+        "👉 https://shop.pipitea.com/ppbs/7-benefits",
+        "shop.pipitea.com",
+        "https://get.trywellvi.com/pages/wellvi-tea",
+      ),
+    ).toBe("👉 https://get.trywellvi.com/pages/wellvi-tea");
+  });
+
+  it("matches with or without protocol/www prefix on the competitor's mention", () => {
+    expect(
+      replaceLinkMentions("Visit https://www.avouria.com/sale now", "avouria.com", "https://mybrand.com/deal"),
+    ).toBe("Visit https://mybrand.com/deal now");
+  });
+
+  it("keeps trailing sentence punctuation outside the replaced link", () => {
+    expect(
+      replaceLinkMentions("Check it out at pipitea.com/ppbs/7-benefits.", "pipitea.com", "https://mybrand.com/x"),
+    ).toBe("Check it out at https://mybrand.com/x.");
   });
 
   it("is a no-op when the domain never appears in the text", () => {
-    expect(replaceLinkMentions("No links here", "avouria.com", "mybrand.com")).toBe("No links here");
+    expect(replaceLinkMentions("No links here", "avouria.com", "https://mybrand.com")).toBe("No links here");
+  });
+
+  it("is a no-op when no myLandingPageUrl is provided", () => {
+    expect(replaceLinkMentions("Shop at avouria.com", "avouria.com", "")).toBe("Shop at avouria.com");
   });
 });
 
 describe("localizePrimaryText", () => {
-  it("swaps both brand name and link when both are provided", () => {
+  it("swaps both brand name and link when both are provided, using the full my-landing-page URL", () => {
     const result = localizePrimaryText({
       body: "Then I found Avouria's tank at avouria.com.",
       competitorBrandName: "Avouria",
@@ -72,7 +92,18 @@ describe("localizePrimaryText", () => {
       myBrandName: "MyBrand",
       myLandingPageUrl: "https://mybrand.com/products/tank",
     });
-    expect(result).toBe("Then I found MyBrand's tank at mybrand.com.");
+    expect(result).toBe("Then I found MyBrand's tank at https://mybrand.com/products/tank.");
+  });
+
+  it("discards the competitor's own subpage path when swapping the link", () => {
+    const result = localizePrimaryText({
+      body: "👉 https://shop.pipitea.com/ppbs/7-benefits",
+      competitorBrandName: "Pipi Tea",
+      competitorDomain: "shop.pipitea.com",
+      myBrandName: "wellvi",
+      myLandingPageUrl: "https://get.trywellvi.com/pages/wellvi-tea",
+    });
+    expect(result).toBe("👉 https://get.trywellvi.com/pages/wellvi-tea");
   });
 
   it("only swaps the brand name when no matched landing page is available", () => {

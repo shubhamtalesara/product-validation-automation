@@ -1,5 +1,3 @@
-import { extractDomain } from "./domain.js";
-
 function escapeRegExp(s: string): string {
   return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
@@ -29,12 +27,25 @@ export function replaceBrandName(text: string, competitorBrand: string, myBrand:
   return text.replace(pattern, (_match, possessive?: string) => (possessive ? `${myBrand}${possessive}` : myBrand));
 }
 
-/** Replaces any inline mention of a competitor's domain (with or without protocol/www) with your own domain. */
-export function replaceLinkMentions(text: string, competitorDomain: string, myDomain: string): string {
+/**
+ * Replaces an entire inline mention of a competitor's URL - domain plus
+ * whatever subpage/path follows it - with your own landing page URL, used
+ * verbatim exactly as configured. Swapping only the domain and keeping the
+ * competitor's own path (e.g. "yourbrand.com/their-page-slug") would
+ * produce a link to a page that doesn't exist on your site; the whole URL
+ * has to go, not just the host part of it.
+ */
+export function replaceLinkMentions(text: string, competitorDomain: string, myLandingPageUrl: string): string {
   const domain = competitorDomain.trim();
-  if (!text || !domain || !myDomain.trim()) return text;
-  const pattern = new RegExp(`(https?:\\/\\/)?(www\\.)?${escapeRegExp(domain)}`, "gi");
-  return text.replace(pattern, (_match, protocol = "", www = "") => `${protocol}${www}${myDomain}`);
+  const myUrl = myLandingPageUrl.trim();
+  if (!text || !domain || !myUrl) return text;
+  const pattern = new RegExp(`(?:https?:\\/\\/)?(?:www\\.)?${escapeRegExp(domain)}(?:\\/[^\\s"'()<>]*)?`, "gi");
+  return text.replace(pattern, (match) => {
+    // Keep sentence-ending punctuation stuck to the URL (e.g. "...page.")
+    // outside the replacement instead of swallowing it into the link.
+    const trailingPunctuation = match.match(/[.,!?;:]+$/)?.[0] ?? "";
+    return trailingPunctuation ? `${myUrl}${trailingPunctuation}` : myUrl;
+  });
 }
 
 export interface LocalizeParams {
@@ -60,12 +71,7 @@ export interface LocalizeParams {
 export function localizePrimaryText(params: LocalizeParams): string {
   let text = params.body;
   if (params.myLandingPageUrl) {
-    try {
-      const myDomain = extractDomain(params.myLandingPageUrl);
-      text = replaceLinkMentions(text, params.competitorDomain, myDomain);
-    } catch {
-      // Malformed "my" landing page URL - leave any link mentions untouched.
-    }
+    text = replaceLinkMentions(text, params.competitorDomain, params.myLandingPageUrl);
   }
   if (params.myBrandName) {
     text = replaceBrandName(text, params.competitorBrandName, params.myBrandName);
