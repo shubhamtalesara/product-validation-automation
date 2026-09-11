@@ -1,8 +1,10 @@
 {
   "myLandingPages": [
-    { "url": "https://get.trywellvi.com/pages/wellvi-tea", "type": "PDP", "brandName": "wellvi" }
+    { "url": "https://get.purevitalic.com/pages/consumer-tested-men-adv", "type": "consumer-tested-men-listicle", "brandName": "Purevitallic" },
+    { "url": "https://get.purevitalic.com/pages/magnesium-bisglycinate-pdp", "type": "maximum-absorption-magnesium-bisglycinate-gummies-PDP", "brandName": "Purevitallic" },
+    { "url": "https://get.purevitalic.com/pages/fake-magnesium", "type": "advertorial-magnesium", "brandName": "Purevitallic" }
  ],
   "competitors": [
-    { "name": "Pipi Tea", "landingPage": "https://shop.pipitea.com" }
+    { "name": "SPNutrition", "landingPage": "spnutrition-us.com" }
   ]
 }
