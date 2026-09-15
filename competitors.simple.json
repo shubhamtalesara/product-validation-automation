@@ -1,10 +1,33 @@
 {
   "myLandingPages": [
-    { "url": "https://get.purevitalic.com/pages/consumer-tested-men-adv", "type": "consumer-tested-men-listicle", "brandName": "Purevitallic" },
-    { "url": "https://get.purevitalic.com/pages/magnesium-bisglycinate-pdp", "type": "maximum-absorption-magnesium-bisglycinate-gummies-PDP", "brandName": "Purevitallic" },
-    { "url": "https://get.purevitalic.com/pages/fake-magnesium", "type": "advertorial-magnesium", "brandName": "Purevitallic" }
- ],
+    {
+      "url": "https://get.purevitalic.com/pages/ceylon-cinnamon-kidney-function",
+      "type": "kidney-listicle",
+      "brandName": "Purevitalic"
+    },
+    {
+      "url": "https://get.purevitalic.com/pages/ceylon-cinnamon-blood-sugar",
+      "type": "lp-ceylon-cinnamon-insulin-listicle",
+      "brandName": "Purevitalic"
+    },
+    {
+      "url": "https://get.purevitalic.com/pages/ceylon-cinnamon-pdp",
+      "type": "PDP",
+      "brandName": "Purevitalic"
+    }
+  ],
   "competitors": [
-    { "name": "SPNutrition", "landingPage": "spnutrition-us.com" }
+    {
+      "name": "Elorita",
+      "landingPage": "https://myelorita.com/products/ceyloncinnamon"
+    },
+    {
+      "name": "Primal Remedies",
+      "landingPage": "https://primal-remedies.com/products/ceylon-cinnamon-7200mg"
+    },
+    {
+      "name": "Get Lirae",
+      "landingPage": "https://getlirae.com/products/ceylon-cinnamon-7-200mg"
+    }
   ]
 }
