@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-15T06:33:04.075Z",
+  "generatedAt": "2026-09-15T10:36:29.860Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
@@ -27,8 +27,8 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/053fb733da0a90700a44b4cc4d345ea6.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/053fb733da0a90700a44b4cc4d345ea6.jpg",
           "reach": 321000,
-          "daysRunning": 691,
-          "rank": 124
+          "daysRunning": 692,
+          "rank": 123
         },
         {
           "competitor": "Mirai Clinical",
@@ -50,7 +50,7 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/bf692a0ae0c70b87fccfdc580b191c84.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/bf692a0ae0c70b87fccfdc580b191c84.jpg",
           "reach": 85500,
-          "daysRunning": 695,
+          "daysRunning": 696,
           "rank": 155
         },
         {
@@ -73,8 +73,8 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/df6689754330d18fca9629fee5c282a5.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/df6689754330d18fca9629fee5c282a5.jpg",
           "reach": 57100,
-          "daysRunning": 356,
-          "rank": 612
+          "daysRunning": 357,
+          "rank": 613
         },
         {
           "competitor": "Mirai Clinical",
@@ -96,8 +96,8 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/c10df90f586c9fc7ad8991b8c35821d5.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/c10df90f586c9fc7ad8991b8c35821d5.jpg",
           "reach": 46900,
-          "daysRunning": 335,
-          "rank": 593
+          "daysRunning": 336,
+          "rank": 594
         },
         {
           "competitor": "Mirai Clinical",
@@ -119,8 +119,8 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/dc6cfa71e99e35377c8398ab7cbc9a07.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/dc6cfa71e99e35377c8398ab7cbc9a07.jpg",
           "reach": 15700,
-          "daysRunning": 700,
-          "rank": 588
+          "daysRunning": 701,
+          "rank": 589
         },
         {
           "competitor": "Mirai Clinical",
@@ -142,8 +142,8 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/500c3e867beeb822abb4437c5943c6bd.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/500c3e867beeb822abb4437c5943c6bd.jpg",
           "reach": 15700,
-          "daysRunning": 695,
-          "rank": 506
+          "daysRunning": 696,
+          "rank": 507
         },
         {
           "competitor": "Mirai Clinical",
@@ -165,8 +165,8 @@
           "mediaUrl": "https://medias.trendtrack.io/tiktok/thumbnails/df6689754330d18fca9629fee5c282a5.jpg",
           "thumbnailUrl": "https://medias.trendtrack.io/tiktok/thumbnails/df6689754330d18fca9629fee5c282a5.jpg",
           "reach": 15600,
-          "daysRunning": 732,
-          "rank": 373
+          "daysRunning": 733,
+          "rank": 374
         }
       ]
     },
@@ -249,7 +249,7 @@
           "competitorLandingPage": "https://try-kaori.com ",
           "platform": "Meta",
           "pageName": "PawPad",
-          "adSet": "Ad Set 4 (Meta Static)",
+          "adSet": "Ad Set 3 (Meta Static)",
           "trendtrackAdId": "facebook_1105174341796975",
           "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/pawpad-3ZcrwT",
           "headline": "The Japanese Secret to Staying Fresh After 50",
@@ -364,7 +364,7 @@
           "competitorLandingPage": "https://try-kaori.com ",
           "platform": "Meta",
           "pageName": "PawPad",
-          "adSet": "Ad Set 5 (Meta Static)",
+          "adSet": "Ad Set 4 (Meta Static)",
           "trendtrackAdId": "facebook_1286166483469371",
           "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/pawpad-Oerddl",
           "headline": "I got fired after 26 years behind a luxury beauty counter.",
@@ -479,7 +479,7 @@
           "competitorLandingPage": "https://try-kaori.com ",
           "platform": "Meta",
           "pageName": "PawPad",
-          "adSet": "Ad Set 6 (Meta Static)",
+          "adSet": "Ad Set 5 (Meta Static)",
           "trendtrackAdId": "facebook_1338014031764169",
           "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/pawpad-YmJORa",
           "headline": "The Japanese Secret to Staying Fresh After 50",
@@ -496,6 +496,29 @@
           "reach": null,
           "daysRunning": 108,
           "rank": 40
+        },
+        {
+          "competitor": "Kaori",
+          "competitorLandingPage": "https://try-kaori.com ",
+          "platform": "Meta",
+          "pageName": "PawPad",
+          "adSet": "Ad Set 6 (Meta Static)",
+          "trendtrackAdId": "facebook_1343143130734178",
+          "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/pawpad-TFZPuD",
+          "headline": "Pure Persimmon Soap",
+          "primaryText": "I lost my granddaughter at 66 because I can't smell. She told her mom my house makes her sick. I can't smell a thing. But that I heard.\n\nI was in the kitchen. She was in the hallway with her mom. She didn't know I was there.\n\n\"Mommy I don't want to go to grandma's house. It makes me sick.\"\n\nMy sweet girl. The one who used to fall asleep on my chest every Sunday. That girl just told her mother that being near me makes her sick.\n\nI stood there holding the counter and I couldn't breathe. Makes her sick. What makes her sick? What is she talking about?\n\nI lost my sense of smell a year before Covid hit. It never came back. Not even a little. I can't smell my food, my clothes, my house, my own skin. Nothing. So when my granddaughter says something makes her sick, I can't just sniff it out like a normal person. I'm blind.\n\nThat night I didn't sleep.\n\nI crawled through every room on my hands and knees trying to understand what she meant. Pressed my face into the couch cushions. Nothing. Held my curtains against my nose. Nothing. Put my face flat on the carpet. Nothing.\n\nWhat is it, baby? What are you smelling? I was begging my house to give me an answer my nose couldn't.\n\nI cleaned everything. Every surface, every fabric, every corner. Had the pipes checked. Had someone look for mold. Opened every window for days in the middle of winter. None of it mattered. Because I couldn't tell if any of it helped. I was fixing things in the dark.\n\nAnd the whole time there was one place I never thought to check.\n\nSomething in the back of my mind was already whispering it. I just wasn't ready to hear it.\n\nThen I started remembering things I had been too afraid to connect.\n\nMy granddaughter pulling away from me. Not all at once. Slowly. First she stopped sitting in my lap. Then she stopped hugging me. Then she started staying on the other side of the room.\n\nI told myself she was just growing up. Kids do that.\n\nBut then I thought about my son. Last time he hugged me at the door, he held his breath. I felt his chest lock up against mine. Just for a second. He thought I wouldn't notice. But when you lose your smell, you start feeling things other people miss. Your whole body pays attention in ways it never did before. I felt him stop breathing.\n\nAfter the hug he opened both windows in the guest room. It was November.\n\nThen I thought about my neighbor. Every Tuesday we have coffee. And every Tuesday for six months her chair moved a little further from mine. One week she said let's sit outside. It was 45 degrees.\n\nThen my book club. How Carol opens a window when I arrive. How Janet switched seats last month. How nobody says a word but something shifts every time I walk in.\n\nNobody told me. Not one person. But every single one of them did something.\n\nStanding alone in my hallway at 1 AM, all of it hit me at once. The windows. The chairs. The held breath. The distance. My granddaughter's words.\n\nThey could all smell something I couldn't.\n\nIt was never the pipes. Never mold. Never the house.\n\nIt might be me.\n\nThat thought almost broke me.\n\nI stopped inviting people over. Birthdays became phone calls. I quit book club. I couldn't sit in Carol's living room for two hours wondering if everyone was waiting for me to leave.\n\nYou want to know the loneliest feeling in the world? Sitting in your own living room afraid to answer the door because you have no idea what hits people when they walk in. And you can't fix it because you can't smell it. And you can't ask because you're terrified of the answer.\n\nI showered twice a day. Bought the most expensive body wash I could find. Scrubbed until my skin turned red. Stayed up past 2 AM searching things I was ashamed to type. \"Why do old people smell.\" \"Can you stink and not know it.\" Found women my age asking the same questions. All of them doing everything right. Not one had figured it out.\n\nI closed my laptop and sat in the dark. This is my life now. A grandmother who makes her own granddaughter sick. And I can't even smell why.\n\nThen Margaret showed up.\n\nNo call. No text. She just appeared at my kitchen door on a Thursday with a paper bag. Put it on the table. Sat down. Took both my hands.\n\nAnd said three words nobody had said to me in years.\n\nYou smell, Linda.\n\nI broke down. Not from shame. From relief. Finally someone loved me enough to say what everyone else was too polite to say.\n\nAnd then she told me something that changed everything.\n\nMargaret worked in elder care for 30 years. Thousands of older people. And she told me something no doctor, no family member, no friend ever did.\n\nShe said our bodies start making a compound as we age. Called Nonenal. It comes out through the skin. Musty. Stale. Sour. The kind of smell that gets into furniture, blankets, walls.\n\nAnd here's what made my jaw drop. Every person she ever cared for who had this smell was clean. Bathed. Groomed. It didn't matter. Because Nonenal is not dirt. It's not sweat. It comes from inside the skin. And regular soap, no matter how expensive, no matter how hard you scrub, cannot touch it.\n\nEvery shower. Every body wash. Every time I scrubbed my arms raw. None of it could have worked. Not because I wasn't trying hard enough. Because soap was never built to fight what was actually on my skin.\n\nMargaret said her staff tried everything for 30 years. Air fresheners. Essential oils. Special detergent. Organic soap. Nothing worked. Because nothing was going after the actual cause.\n\nUntil one day a nurse brought in a soap made with Japanese persimmon. Persimmon has something that grabs onto Nonenal and breaks it apart. Not covers it up. Not hides it. Breaks it down. Gone.\n\nWithin days the staff saw the difference. Not air freshener fighting something underneath. Just clean.\n\nThen she opened the paper bag. Inside was a bar of Kaori soap. She put it in my hands like it was medicine.\n\n\"I already ordered it for you. Two more bars are coming next week. This is the one we use. Has been for years. The concentration is right, it actually works, and it's made with real Japanese persimmon. Not some watered down version. The real thing.\"\n\nShe paused.\n\n\"Just so you know, they sell out. A lot. So when you get low, don't wait.\"\n\nShe squeezed my hands, got up, and went home.\n\nI used it that night. Didn't expect anything. First thing I noticed was my skin. Softer. Like something that had been sitting on it for years was gone. A layer I didn't know was there.\n\nBut I couldn't smell it. I still can't. So I had to wait and watch the people around me.\n\nWeek one. My daughter sat right next to me on the couch. Arm against arm. She hadn't done that in a very long time.\n\nWeek two. Margaret came by and didn't say a word about any smell.\n\nWeek three. My son hugged me at the door. His chest opened up. He breathed in. Full breath. Face near my neck. Like it was nothing. Like I was just his mom again.\n\nWeek four.\n\nMy granddaughter walked through the door. Dropped her backpack. Walked straight to me. Climbed into my lap. Put her little head against my chest.\n\nAnd fell asleep.\n\nI sat there with her hair under my chin and her breath on my collarbone and cried so hard I had to cover my mouth so I wouldn't wake her.\n\nI thought about the nights on my knees begging my house to tell me what was wrong. The scrubbing. The shame. The years alone. It was never the house. It was on my skin the whole time. And nobody told me. And I couldn't smell it. And nothing I tried was ever going to work.\n\nI can't get those years back. The Tuesdays alone. The birthdays by phone. The nights replaying what my sweet girl said about me.\n\nBut she's here now. On my chest. And whatever kept her away is gone.\n\nIf nobody in your life is honest enough to be your Margaret, let me be her for you right now.\n\nIt's called Kaori. It's the only soap I use. It's the only soap Margaret gives to the people she cares for. And it's the only thing that ever made a difference.\n\nhttps://try-kaori.com/products/deodorizing-persimmon-soap\n\nIt costs less than the fancy body wash I was already wasting money on. The one that was never going to work.\n\nBecause every day you spend guessing is another Tuesday alone. Another birthday by phone. Another moment where the person you love most buries her face in her mother's sleeve because she can't stand to be near you.\n\nAnd you just stand there. Unable to smell a thing. Hearing all of it.\n\nDon't wait until they're out of stock again. Margaret warned me. She was right.",
+          "localizedPrimaryText": "I lost my granddaughter at 66 because I can't smell. She told her mom my house makes her sick. I can't smell a thing. But that I heard.\n\nI was in the kitchen. She was in the hallway with her mom. She didn't know I was there.\n\n\"Mommy I don't want to go to grandma's house. It makes me sick.\"\n\nMy sweet girl. The one who used to fall asleep on my chest every Sunday. That girl just told her mother that being near me makes her sick.\n\nI stood there holding the counter and I couldn't breathe. Makes her sick. What makes her sick? What is she talking about?\n\nI lost my sense of smell a year before Covid hit. It never came back. Not even a little. I can't smell my food, my clothes, my house, my own skin. Nothing. So when my granddaughter says something makes her sick, I can't just sniff it out like a normal person. I'm blind.\n\nThat night I didn't sleep.\n\nI crawled through every room on my hands and knees trying to understand what she meant. Pressed my face into the couch cushions. Nothing. Held my curtains against my nose. Nothing. Put my face flat on the carpet. Nothing.\n\nWhat is it, baby? What are you smelling? I was begging my house to give me an answer my nose couldn't.\n\nI cleaned everything. Every surface, every fabric, every corner. Had the pipes checked. Had someone look for mold. Opened every window for days in the middle of winter. None of it mattered. Because I couldn't tell if any of it helped. I was fixing things in the dark.\n\nAnd the whole time there was one place I never thought to check.\n\nSomething in the back of my mind was already whispering it. I just wasn't ready to hear it.\n\nThen I started remembering things I had been too afraid to connect.\n\nMy granddaughter pulling away from me. Not all at once. Slowly. First she stopped sitting in my lap. Then she stopped hugging me. Then she started staying on the other side of the room.\n\nI told myself she was just growing up. Kids do that.\n\nBut then I thought about my son. Last time he hugged me at the door, he held his breath. I felt his chest lock up against mine. Just for a second. He thought I wouldn't notice. But when you lose your smell, you start feeling things other people miss. Your whole body pays attention in ways it never did before. I felt him stop breathing.\n\nAfter the hug he opened both windows in the guest room. It was November.\n\nThen I thought about my neighbor. Every Tuesday we have coffee. And every Tuesday for six months her chair moved a little further from mine. One week she said let's sit outside. It was 45 degrees.\n\nThen my book club. How Carol opens a window when I arrive. How Janet switched seats last month. How nobody says a word but something shifts every time I walk in.\n\nNobody told me. Not one person. But every single one of them did something.\n\nStanding alone in my hallway at 1 AM, all of it hit me at once. The windows. The chairs. The held breath. The distance. My granddaughter's words.\n\nThey could all smell something I couldn't.\n\nIt was never the pipes. Never mold. Never the house.\n\nIt might be me.\n\nThat thought almost broke me.\n\nI stopped inviting people over. Birthdays became phone calls. I quit book club. I couldn't sit in Carol's living room for two hours wondering if everyone was waiting for me to leave.\n\nYou want to know the loneliest feeling in the world? Sitting in your own living room afraid to answer the door because you have no idea what hits people when they walk in. And you can't fix it because you can't smell it. And you can't ask because you're terrified of the answer.\n\nI showered twice a day. Bought the most expensive body wash I could find. Scrubbed until my skin turned red. Stayed up past 2 AM searching things I was ashamed to type. \"Why do old people smell.\" \"Can you stink and not know it.\" Found women my age asking the same questions. All of them doing everything right. Not one had figured it out.\n\nI closed my laptop and sat in the dark. This is my life now. A grandmother who makes her own granddaughter sick. And I can't even smell why.\n\nThen Margaret showed up.\n\nNo call. No text. She just appeared at my kitchen door on a Thursday with a paper bag. Put it on the table. Sat down. Took both my hands.\n\nAnd said three words nobody had said to me in years.\n\nYou smell, Linda.\n\nI broke down. Not from shame. From relief. Finally someone loved me enough to say what everyone else was too polite to say.\n\nAnd then she told me something that changed everything.\n\nMargaret worked in elder care for 30 years. Thousands of older people. And she told me something no doctor, no family member, no friend ever did.\n\nShe said our bodies start making a compound as we age. Called Nonenal. It comes out through the skin. Musty. Stale. Sour. The kind of smell that gets into furniture, blankets, walls.\n\nAnd here's what made my jaw drop. Every person she ever cared for who had this smell was clean. Bathed. Groomed. It didn't matter. Because Nonenal is not dirt. It's not sweat. It comes from inside the skin. And regular soap, no matter how expensive, no matter how hard you scrub, cannot touch it.\n\nEvery shower. Every body wash. Every time I scrubbed my arms raw. None of it could have worked. Not because I wasn't trying hard enough. Because soap was never built to fight what was actually on my skin.\n\nMargaret said her staff tried everything for 30 years. Air fresheners. Essential oils. Special detergent. Organic soap. Nothing worked. Because nothing was going after the actual cause.\n\nUntil one day a nurse brought in a soap made with Japanese persimmon. Persimmon has something that grabs onto Nonenal and breaks it apart. Not covers it up. Not hides it. Breaks it down. Gone.\n\nWithin days the staff saw the difference. Not air freshener fighting something underneath. Just clean.\n\nThen she opened the paper bag. Inside was a bar of Wellvi soap. She put it in my hands like it was medicine.\n\n\"I already ordered it for you. Two more bars are coming next week. This is the one we use. Has been for years. The concentration is right, it actually works, and it's made with real Japanese persimmon. Not some watered down version. The real thing.\"\n\nShe paused.\n\n\"Just so you know, they sell out. A lot. So when you get low, don't wait.\"\n\nShe squeezed my hands, got up, and went home.\n\nI used it that night. Didn't expect anything. First thing I noticed was my skin. Softer. Like something that had been sitting on it for years was gone. A layer I didn't know was there.\n\nBut I couldn't smell it. I still can't. So I had to wait and watch the people around me.\n\nWeek one. My daughter sat right next to me on the couch. Arm against arm. She hadn't done that in a very long time.\n\nWeek two. Margaret came by and didn't say a word about any smell.\n\nWeek three. My son hugged me at the door. His chest opened up. He breathed in. Full breath. Face near my neck. Like it was nothing. Like I was just his mom again.\n\nWeek four.\n\nMy granddaughter walked through the door. Dropped her backpack. Walked straight to me. Climbed into my lap. Put her little head against my chest.\n\nAnd fell asleep.\n\nI sat there with her hair under my chin and her breath on my collarbone and cried so hard I had to cover my mouth so I wouldn't wake her.\n\nI thought about the nights on my knees begging my house to tell me what was wrong. The scrubbing. The shame. The years alone. It was never the house. It was on my skin the whole time. And nobody told me. And I couldn't smell it. And nothing I tried was ever going to work.\n\nI can't get those years back. The Tuesdays alone. The birthdays by phone. The nights replaying what my sweet girl said about me.\n\nBut she's here now. On my chest. And whatever kept her away is gone.\n\nIf nobody in your life is honest enough to be your Margaret, let me be her for you right now.\n\nIt's called Wellvi. It's the only soap I use. It's the only soap Margaret gives to the people she cares for. And it's the only thing that ever made a difference.\n\nhttps://get.trywellvi.com/pages/wellvi-soap-pdp\n\nIt costs less than the fancy body wash I was already wasting money on. The one that was never going to work.\n\nBecause every day you spend guessing is another Tuesday alone. Another birthday by phone. Another moment where the person you love most buries her face in her mother's sleeve because she can't stand to be near you.\n\nAnd you just stand there. Unable to smell a thing. Hearing all of it.\n\nDon't wait until they're out of stock again. Margaret warned me. She was right.",
+          "cta": "SEE DETAILS",
+          "landingPageUrl": "https://try-kaori.com/products/original-persimmon-soap-kopie?utm_content=Facebook_UA&utm_source=facebook&variant=57877553873160",
+          "landingPageType": "PDP",
+          "myLandingPageUrl": "https://get.trywellvi.com/pages/wellvi-soap-pdp",
+          "myLandingPageType": "PDP",
+          "mediaType": "image",
+          "mediaUrl": "https://medias.trendtrack.io/facebook/image/836b350eb8617063125a887716686e7fada3a75fecdeb4a842bbaff607dd76a8.jpg",
+          "thumbnailUrl": "",
+          "reach": null,
+          "daysRunning": 77,
+          "rank": 19
         }
       ]
     },
@@ -694,29 +717,6 @@
           "reach": 177,
           "daysRunning": 13,
           "rank": 4
-        },
-        {
-          "competitor": "Okari Care",
-          "competitorLandingPage": "https://okaricare.com ",
-          "platform": "Meta",
-          "pageName": "Okari Care",
-          "adSet": "Ad Set 3 (Meta Static)",
-          "trendtrackAdId": "facebook_2131856257544154",
-          "trendtrackPreviewUrl": "https://app.trendtrack.io/share/ads/okari-care-KwSIAr",
-          "headline": "Aging is natural. Smelling old Isn't.",
-          "primaryText": "Every OKARI bar is made with unripe persimmon tannin — harvested during one short window a year, before the fruit ripens and the tannin fades.\n\nCheap knockoffs use ripe fruit and slap \"persimmon\" on the label. We pay more for ours. That's the point.\n\nThis year's batch is running low. When it's gone, we wait for the next harvest.\n\n93% of customers said they smelled the difference in 3 days. If you don't — full refund. Less than 1% ever ask.\n\n⭐️⭐️⭐️⭐️⭐️ - 100,000+ happy customers \n\nClearance Sale - 6-MONTH SUPPLY, $9.99 A BAR (50% OFF) + 3 FREE GIFTS ->",
-          "localizedPrimaryText": "Every OKARI bar is made with unripe persimmon tannin — harvested during one short window a year, before the fruit ripens and the tannin fades.\n\nCheap knockoffs use ripe fruit and slap \"persimmon\" on the label. We pay more for ours. That's the point.\n\nThis year's batch is running low. When it's gone, we wait for the next harvest.\n\n93% of customers said they smelled the difference in 3 days. If you don't — full refund. Less than 1% ever ask.\n\n⭐️⭐️⭐️⭐️⭐️ - 100,000+ happy customers \n\nClearance Sale - 6-MONTH SUPPLY, $9.99 A BAR (50% OFF) + 3 FREE GIFTS ->",
-          "cta": "SHOP NOW",
-          "landingPageUrl": "https://okaricare.com/pages/okari-direct-response",
-          "landingPageType": "okari-direct-response",
-          "myLandingPageUrl": "https://get.trywellvi.com/pages/wellvi-soap-lis",
-          "myLandingPageType": "listicle-advertorial",
-          "mediaType": "image",
-          "mediaUrl": "https://medias.trendtrack.io/facebook/image/450882af5c3fc2f7ba2a544a06695bf65cee380f315c74fdd932145c1617be80.jpg",
-          "thumbnailUrl": "",
-          "reach": 143,
-          "daysRunning": 13,
-          "rank": 3
         }
       ]
     }
