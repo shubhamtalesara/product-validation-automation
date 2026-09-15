@@ -1,11 +1,11 @@
 {
-  "generatedAt": "2026-09-15T05:49:18.663Z",
+  "generatedAt": "2026-09-15T05:59:18.708Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
       "name": "metabolae",
       "landingPage": "https://metabolae.com/products/ceylon-cinnamon-7200mg",
-      "error": "Could not find TrendTrack Meta ads for [\"metabolae.com\"] (from https://metabolae.com/products/ceylon-cinnamon-7200mg). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 404 for GET /v1/advertisers/metabolae.com/ads: {\"error\":{\"code\":\"not_found\",\"message\":\"Advertiser not found.\",\"requestId\":\"aee0302c-4a0d-4553-a582-1dcc611cf99e\"}})",
+      "error": "Could not find TrendTrack Meta ads for [\"metabolae.com\"] (from https://metabolae.com/products/ceylon-cinnamon-7200mg). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 404 for GET /v1/advertisers/metabolae.com/ads: {\"error\":{\"code\":\"not_found\",\"message\":\"Advertiser not found.\",\"requestId\":\"3395f507-b623-44fa-9289-716ffb3ecf05\"}})",
       "ads": []
     }
   ]
