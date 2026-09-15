@@ -1,6 +1,7 @@
 export const SIMPLE_SHEET_COLUMNS = [
   "Competitor",
-  "Facebook Page Name",
+  "Platform",
+  "Page / Profile Name",
   "Ad Set",
   "Headline",
   "Primary Text",
@@ -23,7 +24,10 @@ export const SIMPLE_SHEET_COLUMNS = [
 export interface SimpleAdRow {
   competitor: string;
   competitorLandingPage: string;
-  facebookPageName: string;
+  /** "Meta" or "TikTok" - which ad platform TrendTrack pulled this ad from. */
+  platform: string;
+  /** Facebook Page name for a Meta ad, or TikTok profile/handle for a TikTok ad. */
+  pageName: string;
   adSet: string;
   trendtrackAdId: string;
   trendtrackPreviewUrl: string;
@@ -61,7 +65,8 @@ function creativePreviewFormula(row: SimpleAdRow): string {
 export function simpleRowToSheetValues(row: SimpleAdRow): (string | number)[] {
   return [
     row.competitor,
-    row.facebookPageName,
+    row.platform,
+    row.pageName,
     row.adSet,
     row.headline,
     row.primaryText,

@@ -82,3 +82,33 @@ export async function resolveAdvertiserIds(
 
   return { advertiserIds: [domain], source: "domain-guess" };
 }
+
+/**
+ * Resolves every TrendTrack shop ID for one configured competitor's domain,
+ * for the TikTok library fetch (`GET /v1/shops/{shopId}/tiktok/library`).
+ * TikTok ads live in a completely separate namespace from Meta's advertiser
+ * pages, so there's no equivalent "advertiser ID" to resolve - only the
+ * shop. Reuses the same zero-credit `/v1/lookup` call resolveAdvertiserIds
+ * makes (a second call rather than sharing state, so this stays usable
+ * independently of Meta resolution - e.g. when advertiserId is manually
+ * overridden for Meta but TikTok should still resolve normally).
+ */
+export async function resolveShopIds(trendtrack: TrendtrackClient, competitor: SimpleCompetitor): Promise<string[]> {
+  const domain = extractDomain(competitor.landingPage);
+  try {
+    const matches = await trendtrack.lookup(domain, { type: "auto", limit: 10 });
+    const shopIds = dedupeIds(matches.map((m) => m.shop?.id));
+    if (shopIds.length === 0) {
+      logger.warn(`Lookup for ${competitor.name} found no shop - skipping TikTok fetch for this competitor`, {
+        domain,
+      });
+    }
+    return shopIds;
+  } catch (err) {
+    logger.warn(`Shop lookup failed for ${competitor.name}, skipping TikTok fetch for this competitor`, {
+      domain,
+      error: toSanitizedMessage(err),
+    });
+    return [];
+  }
+}

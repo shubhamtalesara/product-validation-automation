@@ -4,10 +4,11 @@ import { clubIntoAdSets } from "./adSets.js";
 interface FakeAd {
   id: string;
   mediaType: string;
+  platform?: string;
 }
 
-function ad(id: string, mediaType: string): FakeAd {
-  return { id, mediaType };
+function ad(id: string, mediaType: string, platform?: string): FakeAd {
+  return { id, mediaType, ...(platform ? { platform } : {}) };
 }
 
 describe("clubIntoAdSets", () => {
@@ -56,5 +57,31 @@ describe("clubIntoAdSets", () => {
       "Ad Set 3 (Static)",
       "Ad Set 4 (Static)",
     ]);
+  });
+
+  it("never mixes platforms within one set, even when both are videos", () => {
+    const ads = [
+      ad("m1", "video", "Meta"),
+      ad("t1", "video", "TikTok"),
+      ad("m2", "video", "Meta"),
+      ad("t2", "video", "TikTok"),
+    ];
+    const groups = clubIntoAdSets(ads);
+    for (const group of groups) {
+      const platforms = new Set(group.ads.map((a) => a.platform));
+      expect(platforms.size).toBe(1);
+    }
+  });
+
+  it("labels platform-tagged sets with the platform name, Meta before TikTok", () => {
+    const ads = [ad("t1", "video", "TikTok"), ad("m1", "video", "Meta")];
+    const groups = clubIntoAdSets(ads);
+    expect(groups.map((g) => g.label)).toEqual(["Ad Set 1 (Meta Video)", "Ad Set 2 (TikTok Video)"]);
+  });
+
+  it("keeps the untagged label format when no ad carries a platform", () => {
+    const ads = [ad("v1", "video"), ad("s1", "image")];
+    const groups = clubIntoAdSets(ads);
+    expect(groups.map((g) => g.label)).toEqual(["Ad Set 1 (Video)", "Ad Set 2 (Static)"]);
   });
 });

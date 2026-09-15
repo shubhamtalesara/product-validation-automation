@@ -5,7 +5,8 @@ function baseRow(overrides: Partial<SimpleAdRow> = {}): SimpleAdRow {
   return {
     competitor: "Acme",
     competitorLandingPage: "https://acme.com",
-    facebookPageName: "Acme Official",
+    platform: "Meta",
+    pageName: "Acme Official",
     adSet: "Ad Set 1 (Video)",
     trendtrackAdId: "ad-1",
     trendtrackPreviewUrl: "https://app.trendtrack.io/share/ad-1",

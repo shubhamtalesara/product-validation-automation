@@ -11,6 +11,10 @@ on:
         description: "Dump raw TrendTrack API responses to this run's log (for troubleshooting)"
         type: boolean
         default: false
+      fetch_tiktok:
+        description: "Also fetch TikTok ads (uncheck to fetch Meta only)"
+        type: boolean
+        default: true
 
 permissions:
   contents: write
@@ -37,6 +41,7 @@ jobs:
           GOOGLE_SERVICE_ACCOUNT_JSON: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_JSON }}
           GOOGLE_SHEET_ID: ${{ secrets.GOOGLE_SHEET_ID }}
           LOG_RAW_TRENDTRACK_RESPONSES: ${{ github.event.inputs.debug_logging }}
+          SIMPLE_FETCH_TIKTOK: ${{ github.event.inputs.fetch_tiktok }}
         run: npm run simple:sync
 
       - name: Publish updated dashboard data

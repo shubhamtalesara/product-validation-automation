@@ -166,6 +166,70 @@ describe("TrendtrackClient", () => {
     expect(calledUrl.pathname).toBe("/v1/ads/ad1/share");
   });
 
+  it("lists a shop's TikTok library with query params", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, {
+        requestId: "req-tt",
+        data: [{ id: "tiktok_1", type: "ad", status: "active", daysRunning: 3 }],
+        pagination: { page: 1, limit: 50, total: 1, totalPages: 1 },
+      }),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
+    const result = await client.listShopTiktokLibrary("shop-1", { status: "active", type: "ad" });
+
+    expect(result.data).toHaveLength(1);
+    const calledUrl = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(calledUrl.pathname).toBe("/v1/shops/shop-1/tiktok/library");
+    expect(calledUrl.searchParams.get("status")).toBe("active");
+    expect(calledUrl.searchParams.get("type")).toBe("ad");
+  });
+
+  it("paginates a shop's TikTok library across pages using pagination.totalPages", async () => {
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValueOnce(
+        mockFetchOnce(200, {
+          data: [{ id: "tiktok_1" }, { id: "tiktok_2" }],
+          pagination: { page: 1, limit: 2, total: 3, totalPages: 2 },
+        }),
+      )
+      .mockResolvedValueOnce(
+        mockFetchOnce(200, {
+          data: [{ id: "tiktok_3" }],
+          pagination: { page: 2, limit: 2, total: 3, totalPages: 2 },
+        }),
+      );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
+    const ids: string[] = [];
+    for await (const item of client.paginateShopTiktokLibrary("shop-1", { limit: 2 }, 10)) {
+      ids.push(item.id);
+    }
+
+    expect(ids).toEqual(["tiktok_1", "tiktok_2", "tiktok_3"]);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("fetches a single TikTok library item detail and unwraps the envelope", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      mockFetchOnce(200, {
+        requestId: "req-tt-item",
+        data: { id: "tiktok_1", links: { tiktokUrl: "https://tiktok.com/@x/video/1" } },
+      }),
+    );
+    global.fetch = fetchMock as unknown as typeof fetch;
+
+    const client = new TrendtrackClient({ apiKey: "key", baseUrl: "https://api.example.com" });
+    const item = await client.getTiktokLibraryItem("tiktok_1");
+
+    expect(item.links?.tiktokUrl).toBe("https://tiktok.com/@x/video/1");
+    const calledUrl = new URL(fetchMock.mock.calls[0][0] as string);
+    expect(calledUrl.pathname).toBe("/v1/tiktok/library/tiktok_1");
+  });
+
   it("throws PermanentError on 4xx without retrying", async () => {
     const fetchMock = vi.fn().mockResolvedValue(mockFetchOnce(404, { message: "not found" }));
     global.fetch = fetchMock as unknown as typeof fetch;

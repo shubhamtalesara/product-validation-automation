@@ -153,8 +153,10 @@ meaningfully slow the sync down.
 
 Each row is one winning ad, with:
 
-- **Competitor** / **Facebook Page Name** — which brand and which of their
-  Facebook pages ran it (a brand can run more than one page).
+- **Competitor** / **Platform** / **Page / Profile Name** — which brand, which
+  ad platform the ad came from (`Meta` or `TikTok`), and which of their pages
+  (Facebook Page name) or TikTok profiles ran it. A brand can run more than
+  one page/profile per platform.
 - **Ad Set** — see "Ad set clubbing" below.
 - **Headline** — TrendTrack's own headline field when it has one; when it
   doesn't (common — most ads only have body copy), falls back to a short
@@ -166,32 +168,43 @@ Each row is one winning ad, with:
   name (and any inline link mentions) swapped for yours, from `myBrand`
   and the matched `myLandingPages` entry (see step 4). Identical to
   Primary Text until you fill those in.
-- **CTA** — the call-to-action button label.
+- **CTA** — the call-to-action button label (Meta ads only; TikTok ads don't
+  carry a separate CTA field in TrendTrack's API, so this is blank for them).
 - **Landing Page** / **Landing Page Type** — the exact URL the ad sends
   people to, and an auto-detected label for what kind of page it is: `PDP`
   for a plain product page, `Collection` for a category page, `Home` for
   the homepage, or the page's own slug (e.g. `5-reasons-why`) for an
-  advertorial/quiz/listicle-style page.
+  advertorial/quiz/listicle-style page. TikTok ads don't carry a per-ad
+  destination URL in TrendTrack's API — only a bare domain — so this falls
+  back to the competitor's own configured landing page (with its real path)
+  for a more useful type classification than a bare domain would give.
 - **My Landing Page** / **My Landing Page Type** — whichever entry in your
   shared `myLandingPages` list (step 4) best matches this ad's landing page
   type, and the type label you gave it. Blank until you add entries.
 - **Media Type** / **Creative Preview** / **Media Link** — image or video,
   an inline visual preview of the actual creative, and the direct file URL.
-- **Impressions (Reach)**, **Days Running**, **Rank** — performance
-  signals. Every ad here has been running **at least 30 days** and is a
-  real conversion ad — anything younger, or a page-engagement/"Like Page"
-  ad with no real landing page, is excluded before it can ever take a slot.
+- **Impressions (Reach)**, **Days Running**, **Rank** — performance signals
+  (for TikTok ads, this is views, TikTok's closest equivalent to reach).
+  Ads that have been running **at least 30 days** are preferred as
+  validated winners, and any Meta page-engagement/"Like Page" ad with no
+  real landing page is always excluded. If a competitor has no ad that old
+  yet on either platform (they're mid-cycle on fresh creative testing), the
+  30-day preference is relaxed for just that competitor so their best
+  currently-active ads still show up instead of the competitor vanishing
+  from the sheet entirely.
 - **TrendTrack Ad ID** / **TrendTrack Preview Link** — click the preview
-  link to open the actual ad inside TrendTrack's own viewer.
+  link to open the actual ad (TrendTrack's own viewer for Meta ads, the
+  real TikTok video page for TikTok ads).
 
 ### Ad set clubbing
 
 The selected ads are also grouped into ready-to-launch ad sets (labeled
-"Ad Set 1 (Video)", "Ad Set 2 (Static)", etc.) so you can hand a whole
-sheet section straight to whoever builds your Meta campaigns: each set has
-at most 5 ads, and video ads are never grouped with static (image) ads in
-the same set — a leftover handful of one format still gets its own
-(smaller) set rather than being mixed in.
+e.g. "Ad Set 1 (Meta Video)", "Ad Set 2 (TikTok Video)", "Ad Set 3 (Meta
+Static)") so you can hand a whole sheet section straight to whoever builds
+your campaigns: each set has at most 5 ads, and a set never mixes video
+with static (image) ads, or Meta with TikTok — a leftover handful of one
+format/platform still gets its own (smaller) set rather than being mixed
+in.
 
 ## Troubleshooting a specific ad's data
 
@@ -214,6 +227,19 @@ page/ad account), then pools the ads from all of them together before
 picking the top performers. So if a brand advertises from 2 Facebook
 pages, both are covered automatically — you never have to hunt for a
 "page ID" yourself.
+
+## Meta and TikTok, fetched together
+
+Every sync pulls ads from **both** Meta (Facebook/Instagram) and TikTok for
+each competitor — TrendTrack indexes them as two separate libraries, and
+both get pooled into the same sheet, same slot allocation, and same
+30-day-preference/fallback rule described above. TikTok ads are resolved
+from the same domain lookup as Meta (no separate ID to configure), fetched
+as `active`, paid `ad`-type items only (never someone's organic/non-ad
+video), and marked `TikTok` in the **Platform** column so you can always
+tell which platform an ad came from. If you only want Meta ads, set
+`SIMPLE_FETCH_TIKTOK=false` as a repository secret/variable (or in your
+`.env` for local runs) and re-run the sync.
 
 ## How ad slots are split across competitors
 

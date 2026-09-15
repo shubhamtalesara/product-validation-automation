@@ -1,12 +1,5 @@
-import type { TrendtrackAdSummary } from "../trendtrack/types.js";
-
-export interface CandidateSummary<T = TrendtrackAdSummary> {
-  advertiserId: string;
-  summary: T;
-}
-
-export interface CandidateSelection<T = TrendtrackAdSummary> {
-  chosen: CandidateSummary<T>[];
+export interface CandidateSelection<T> {
+  chosen: T[];
   /** True when nothing met minDaysRunning and we fell back to the best currently-active ads instead. */
   usingFallback: boolean;
 }
@@ -18,12 +11,17 @@ export interface CandidateSelection<T = TrendtrackAdSummary> {
  * mid-cycle on fresh creative testing right now - falls back to all of
  * their (already junk-filtered) active ads instead of excluding the
  * competitor from the sheet altogether.
+ *
+ * Operates directly on whatever candidate objects the caller has (Meta ad
+ * summaries, TikTok library items, or a mix of both as a discriminated
+ * union) rather than a wrapper type, so the exact per-item type - and any
+ * platform discriminant on it - survives selection unchanged.
  */
-export function selectCandidateSummaries<T extends Pick<TrendtrackAdSummary, "daysRunning">>(
-  nonJunkSummaries: CandidateSummary<T>[],
+export function selectCandidates<T extends { daysRunning?: number | null }>(
+  candidates: T[],
   minDaysRunning: number,
 ): CandidateSelection<T> {
-  const validated = nonJunkSummaries.filter(({ summary }) => (summary.daysRunning ?? 0) >= minDaysRunning);
-  const usingFallback = validated.length === 0 && nonJunkSummaries.length > 0;
-  return { chosen: usingFallback ? nonJunkSummaries : validated, usingFallback };
+  const validated = candidates.filter((c) => (c.daysRunning ?? 0) >= minDaysRunning);
+  const usingFallback = validated.length === 0 && candidates.length > 0;
+  return { chosen: usingFallback ? candidates : validated, usingFallback };
 }

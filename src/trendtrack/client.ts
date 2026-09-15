@@ -2,6 +2,10 @@ import { HttpClient } from "../lib/httpClient.js";
 import { createLogger } from "../lib/logger.js";
 import type {
   ListAdsParams,
+  TiktokLibraryItem,
+  TiktokLibraryItemDetail,
+  TiktokLibraryParams,
+  TiktokLibraryResponse,
   TrendtrackAdDetail,
   TrendtrackAdListResponse,
   TrendtrackAdShare,
@@ -150,6 +154,70 @@ export class TrendtrackClient {
     const envelope = await this.http.request<TrendtrackEnvelope<TrendtrackAdShare>>(
       `/v1/ads/${encodeURIComponent(adId)}/share`,
       { method: "POST", headers: this.authHeaders() },
+    );
+    return envelope.data;
+  }
+
+  /**
+   * GET /v1/shops/{shopId}/tiktok/library - TikTok ads/organic videos linked
+   * to one shop, using the same shopId already resolved via lookup() for
+   * Meta. A separate namespace from the Meta-only /v1/ads endpoints above,
+   * with its own page-based (not offset-based) pagination shape.
+   */
+  async listShopTiktokLibrary(
+    shopId: string,
+    params: TiktokLibraryParams = {},
+  ): Promise<TiktokLibraryResponse> {
+    return this.http.request<TiktokLibraryResponse>(
+      `/v1/shops/${encodeURIComponent(shopId)}/tiktok/library`,
+      {
+        method: "GET",
+        headers: this.authHeaders(),
+        query: {
+          status: params.status,
+          type: params.type,
+          sortBy: params.sortBy,
+          order: params.order,
+          page: params.page,
+          limit: params.limit,
+        },
+      },
+    );
+  }
+
+  /** Paginates through a shop's TikTok library up to `maxRecords`, following `pagination.totalPages`. */
+  async *paginateShopTiktokLibrary(
+    shopId: string,
+    params: TiktokLibraryParams = {},
+    maxRecords = 500,
+  ): AsyncGenerator<TiktokLibraryItem> {
+    const pageSize = params.limit ?? 50;
+    let page = params.page ?? 1;
+    let fetched = 0;
+
+    while (fetched < maxRecords) {
+      const response = await this.listShopTiktokLibrary(shopId, { ...params, limit: pageSize, page });
+      const items = response.data ?? [];
+      for (const item of items) {
+        if (fetched >= maxRecords) return;
+        yield item;
+        fetched += 1;
+      }
+      const totalPages = response.pagination?.totalPages ?? page;
+      if (items.length === 0 || page >= totalPages) return;
+      page += 1;
+    }
+  }
+
+  /**
+   * GET /v1/tiktok/library/{itemId} - full detail for one TikTok item,
+   * including the `links.tiktokUrl`/`source.domain` fields the list/query
+   * responses don't carry.
+   */
+  async getTiktokLibraryItem(itemId: string): Promise<TiktokLibraryItemDetail> {
+    const envelope = await this.http.request<TrendtrackEnvelope<TiktokLibraryItemDetail>>(
+      `/v1/tiktok/library/${encodeURIComponent(itemId)}`,
+      { method: "GET", headers: this.authHeaders() },
     );
     return envelope.data;
   }

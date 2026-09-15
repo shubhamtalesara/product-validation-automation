@@ -147,3 +147,115 @@ export interface ListAdsParams {
   order?: "asc" | "desc";
   cpm?: number;
 }
+
+/**
+ * TikTok is a completely separate namespace from the Meta-only /v1/ads
+ * endpoints above - a different Elasticsearch-backed index with its own
+ * shape (per TrendTrack's docs: "This namespace is separate from the
+ * Meta-only /v1/ads endpoints"). No collationId, no callToAction/
+ * landingPageUrl on content, and media/preview links are embedded directly
+ * (no separate media-url or share-link calls like Meta has).
+ */
+export interface TiktokMedia {
+  type?: string;
+  thumbnailUrl?: string | null;
+  mediaUrl?: string;
+  videoUrl?: string;
+  imageUrls?: string[];
+  medias?: { type?: string; url?: string; order?: number }[];
+  durationSec?: number;
+  mediaCount?: number;
+  imageCount?: number;
+}
+
+export interface TiktokContent {
+  description?: string;
+  language?: string;
+  category?: string;
+  hashtags?: string[];
+  music?: { id?: string; title?: string; author?: string };
+}
+
+export interface TiktokMetrics {
+  views?: number;
+  likes?: number;
+  comments?: number;
+  saves?: number;
+  shares?: number;
+  reposts?: number;
+  engagementRate?: number;
+  rank?: number;
+  rankPercent?: number;
+  relevanceScore?: number;
+  deltaRank3d?: number;
+  deltaRank7d?: number;
+  deltaRank14d?: number;
+  deltaRank30d?: number;
+}
+
+export interface TiktokProfile {
+  id?: string;
+  handle?: string;
+  name?: string;
+  avatarUrl?: string;
+  accountType?: string;
+  followers?: number;
+  totalTikToks?: number;
+  percentAds?: number;
+}
+
+export interface TiktokShop {
+  id?: string;
+  domain?: string;
+  name?: string;
+}
+
+/** Item shape shared by the TikTok list/query/shop-scoped-list endpoints. */
+export interface TiktokLibraryItem {
+  id: string;
+  tiktokId?: string;
+  type?: "ad" | "organic" | string;
+  status?: string;
+  publishedAt?: string;
+  createdAt?: string;
+  updatedAt?: string;
+  daysRunning?: number;
+  media?: TiktokMedia;
+  content?: TiktokContent;
+  metrics?: TiktokMetrics;
+  profile?: TiktokProfile;
+  shop?: TiktokShop;
+  indexedAt?: string;
+}
+
+/** GET /v1/tiktok/library/{itemId} adds a few detail-only fields on top of the list item shape. */
+export interface TiktokLibraryItemDetail extends TiktokLibraryItem {
+  links?: { tiktokUrl?: string; profileUrl?: string };
+  source?: { network?: string; sourceType?: string; tiktokPageId?: string; websiteId?: string; domain?: string };
+}
+
+export interface TiktokLibraryResponse {
+  requestId?: string;
+  data: TiktokLibraryItem[];
+  pagination?: { page: number; limit: number; total: number; totalPages: number };
+}
+
+export interface TiktokLibraryParams {
+  status?: "all" | "active" | "inactive";
+  type?: "all" | "ad" | "organic";
+  sortBy?:
+    | "relevance"
+    | "newest"
+    | "updatedAt"
+    | "views"
+    | "likes"
+    | "comments"
+    | "shares"
+    | "saves"
+    | "engagementRate"
+    | "daysRunning"
+    | "followers";
+  order?: "asc" | "desc";
+  page?: number;
+  limit?: number;
+}

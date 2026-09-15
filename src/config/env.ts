@@ -18,6 +18,12 @@ const boolFromString = z
   .transform((v) => v === "true" || v === "1")
   .default("false");
 
+const boolFromStringDefaultTrue = z
+  .string()
+  .optional()
+  .transform((v) => v !== "false" && v !== "0")
+  .default("true");
+
 const numberFromString = (fallback: number) =>
   z
     .string()
@@ -45,6 +51,10 @@ const envSchema = z.object({
   // best N ads by impressions, regardless of which competitor they're
   // from. Not a per-competitor quota.
   SIMPLE_TOTAL_AD_COUNT: numberFromString(30),
+  // TrendTrack's Meta and TikTok ad libraries are separate namespaces (see
+  // src/trendtrack/types.ts) - fetch both by default; set to "false" to
+  // fall back to Meta-only if TikTok data turns out to be unwanted/noisy.
+  SIMPLE_FETCH_TIKTOK: boolFromStringDefaultTrue,
 
   // Meta
   META_ACCESS_TOKEN: z.string().optional().default(""),

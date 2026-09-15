@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { resolveAdvertiserIds } from "./resolveAdvertisers.js";
+import { resolveAdvertiserIds, resolveShopIds } from "./resolveAdvertisers.js";
 import type { TrendtrackClient } from "../trendtrack/client.js";
 import type { TrendtrackLookupResult, TrendtrackShopAdvertiser } from "../trendtrack/types.js";
 import type { SimpleCompetitor } from "./config.js";
@@ -156,5 +156,35 @@ describe("resolveAdvertiserIds", () => {
     });
     const result = await resolveAdvertiserIds(client, competitor);
     expect(result).toEqual({ advertiserIds: ["acme.com"], source: "domain-guess" });
+  });
+});
+
+describe("resolveShopIds", () => {
+  it("returns every distinct shop id found by lookup", async () => {
+    const lookup = vi.fn(async () => [
+      { type: "shop", matchType: "exact", matchField: "domain", score: 1, shop: { id: "shop-1", domain: "acme.com" } },
+      { type: "shop", matchType: "fuzzy", matchField: "name", score: 0.7, shop: { id: "shop-2", domain: "acme.com" } },
+    ] as TrendtrackLookupResult[]);
+    const client = fakeClient({ lookup });
+
+    const result = await resolveShopIds(client, competitor);
+    expect(result).toEqual(["shop-1", "shop-2"]);
+    expect(lookup).toHaveBeenCalledWith("acme.com", { type: "auto", limit: 10 });
+  });
+
+  it("returns an empty list when lookup finds no shop", async () => {
+    const client = fakeClient({ lookup: async () => [] });
+    const result = await resolveShopIds(client, competitor);
+    expect(result).toEqual([]);
+  });
+
+  it("returns an empty list when lookup throws, instead of propagating the error", async () => {
+    const client = fakeClient({
+      lookup: async () => {
+        throw new Error("network error");
+      },
+    });
+    const result = await resolveShopIds(client, competitor);
+    expect(result).toEqual([]);
   });
 });
