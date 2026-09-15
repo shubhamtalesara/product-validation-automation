@@ -18,8 +18,16 @@
   ],
   "competitors": [
     {
+      "name": "Elorita",
+      "landingPage": "https://myelorita.com/products/ceyloncinnamon"
+    },
+    {
+      "name": "Primal Remedies",
+      "landingPage": "https://primal-remedies.com/products/ceylon-cinnamon-7200mg"
+    },
+    {
       "name": "Get Lirae",
-      "landingPage": "getlirae.com"
+      "landingPage": "https://getlirae.com/products/ceylon-cinnamon-7-200mg"
     }
   ]
 }
