@@ -1,25 +1,40 @@
 {
   "myLandingPages": [
     {
-      "url": "https://get.purevitalic.com/pages/ceylon-cinnamon-kidney-function",
-      "type": "kidney-listicle",
-      "brandName": "Purevitalic"
-    },
-    {
-      "url": "https://get.purevitalic.com/pages/ceylon-cinnamon-blood-sugar",
-      "type": "lp-ceylon-cinnamon-insulin-listicle",
-      "brandName": "Purevitalic"
-    },
-    {
-      "url": "https://get.purevitalic.com/pages/ceylon-cinnamon-pdp",
+      "url": "https://get.purevitalic.com/pages/lymphatic-drainage-drops",
       "type": "PDP",
       "brandName": "Purevitalic"
     }
   ],
   "competitors": [
     {
-      "name": "metabolae",
-      "landingPage": "https://metabolae.com"
+      "name": "Natures Roots",
+      "landingPage": "https://trynaturesroots.com /"
+    },
+    {
+      "name": "Native Bloom",
+      "landingPage": "https://trynativebloom.com/"
+    },
+    {
+      "name": "True Nature",
+      "landingPage": "https://trytruenature.com/"
+    },
+    {
+      "name": "Get Elavyn",
+      "landingPage": "https://getelavyn.com/"
+    },
+    {
+      "name": "Lymphlite",
+      "landingPage": "https://lymphlite.com/"
+    },
+    {
+      "name": "Lironava",
+      "landingPage": "https://trylironava.com/"
+    },
+    {
+      "name": "lymphoria",
+      "landingPage": "https://lymphoria.co/"
     }
+
   ]
 }
