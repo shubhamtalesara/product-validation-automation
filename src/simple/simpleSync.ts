@@ -9,7 +9,7 @@ import type { TiktokLibraryItem, TrendtrackAdSummary } from "../trendtrack/types
 import { dedupeCreatives, type DedupCandidate, type DedupGroup } from "../research/dedupe.js";
 import { SheetsClient, type SheetsCredentials } from "../sheets/sheetsClient.js";
 import { loadSimpleConfig, type MyLandingPage, type SimpleCompetitor } from "./config.js";
-import { resolveAdvertiserIds, resolveShopIds } from "./resolveAdvertisers.js";
+import { resolveCompetitorSources } from "./resolveAdvertisers.js";
 import { classifyLandingPage } from "./landingPageType.js";
 import { deriveHeadline } from "./headline.js";
 import { isJunkAd } from "./junkAds.js";
@@ -77,12 +77,9 @@ interface CandidateGathering {
 async function gatherMetaCandidates(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
+  advertiserIds: string[],
   poolSize: number,
-): Promise<{ advertiserIds: string[]; candidates: CompetitorCandidate[]; liveAdsByPage: Map<string, number>; error: string | null }> {
-  const resolved = await resolveAdvertiserIds(trendtrack, competitor);
-  const advertiserIds = resolved.advertiserIds;
-  logger.info(`Fetching Meta ads for ${competitor.name}`, { advertiserIds, source: resolved.source });
-
+): Promise<{ candidates: CompetitorCandidate[]; liveAdsByPage: Map<string, number>; error: string | null }> {
   const candidates: CompetitorCandidate[] = [];
   const liveAdsByPage = new Map<string, number>();
 
@@ -139,12 +136,11 @@ async function gatherMetaCandidates(
         });
       }
     }
-    return { advertiserIds, candidates, liveAdsByPage, error: null };
+    return { candidates, liveAdsByPage, error: null };
   } catch (err) {
     const message = toSanitizedMessage(err);
     logger.error(`Could not fetch Meta ads for ${competitor.name}`, { advertiserIds, error: message });
     return {
-      advertiserIds,
       candidates,
       liveAdsByPage,
       error: `Could not find TrendTrack Meta ads for ${JSON.stringify(advertiserIds)} (from ${competitor.landingPage}). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add "advertiserId" for this competitor in competitors.simple.json. (${message})`,
@@ -156,12 +152,12 @@ async function gatherMetaCandidates(
 async function gatherTiktokCandidates(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
+  shopIds: string[],
   poolSize: number,
 ): Promise<{ candidates: CompetitorCandidate[]; liveAdsByPage: Map<string, number> }> {
   const candidates: CompetitorCandidate[] = [];
   const liveAdsByPage = new Map<string, number>();
 
-  const shopIds = await resolveShopIds(trendtrack, competitor);
   if (shopIds.length === 0) return { candidates, liveAdsByPage };
 
   logger.info(`Fetching TikTok ads for ${competitor.name}`, { shopIds });
@@ -236,9 +232,18 @@ async function gatherCandidateGroups(
 ): Promise<CandidateGathering> {
   const poolSize = Math.max(env.SIMPLE_TOTAL_AD_COUNT * 3, 50);
 
-  const meta = await gatherMetaCandidates(trendtrack, competitor, poolSize);
+  // One resolution call covers both platforms - Meta's advertiserIds and
+  // TikTok's shopIds both come off the same /v1/lookup, so a slow lookup
+  // only costs once per competitor rather than once per platform.
+  const resolved = await resolveCompetitorSources(trendtrack, competitor);
+  logger.info(`Fetching Meta ads for ${competitor.name}`, {
+    advertiserIds: resolved.advertiserIds,
+    source: resolved.source,
+  });
+
+  const meta = await gatherMetaCandidates(trendtrack, competitor, resolved.advertiserIds, poolSize);
   const tiktok = env.SIMPLE_FETCH_TIKTOK
-    ? await gatherTiktokCandidates(trendtrack, competitor, poolSize)
+    ? await gatherTiktokCandidates(trendtrack, competitor, resolved.shopIds, poolSize)
     : { candidates: [] as CompetitorCandidate[], liveAdsByPage: new Map<string, number>() };
 
   const allCandidates = [...meta.candidates, ...tiktok.candidates];
@@ -260,7 +265,7 @@ async function gatherCandidateGroups(
   // report, just a partial result.
   const error = groups.length === 0 ? meta.error : null;
 
-  return { competitor, advertiserIds: meta.advertiserIds, groups, weight, error };
+  return { competitor, advertiserIds: resolved.advertiserIds, groups, weight, error };
 }
 
 interface EnrichedContent {
