@@ -1,16 +1,10 @@
 {
-  "generatedAt": "2026-09-15T04:52:48.960Z",
+  "generatedAt": "2026-09-15T04:55:21.161Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
-      "name": "Primal Remedies",
-      "landingPage": "https://primal-remedies.com/products/ceylon-cinnamon-7200mg",
-      "error": null,
-      "ads": []
-    },
-    {
       "name": "Get Lirae",
-      "landingPage": "https://getlirae.com/products/ceylon-cinnamon-7-200mg",
+      "landingPage": "getlirae.com",
       "error": null,
       "ads": []
     }
