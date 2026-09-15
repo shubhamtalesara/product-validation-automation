@@ -1,6 +1,7 @@
 import { createLogger } from "../lib/logger.js";
 import { toSanitizedMessage } from "../lib/errors.js";
 import type { TrendtrackClient } from "../trendtrack/client.js";
+import type { TrendtrackShopAdvertiser } from "../trendtrack/types.js";
 import { extractDomain } from "./domain.js";
 import type { SimpleCompetitor } from "./config.js";
 
@@ -13,6 +14,21 @@ export interface ResolvedAdvertisers {
 
 function dedupeIds(ids: (string | undefined)[]): string[] {
   return [...new Set(ids.filter((id): id is string => Boolean(id)))];
+}
+
+/**
+ * A shop can be linked to many Facebook advertiser pages that aren't the
+ * brand's own - resellers, affiliates, or copycats all driving traffic to
+ * the same product/domain. Pooling every one of them in drowns the real
+ * page's ads in noise from small/short-lived accounts (and makes one
+ * lookup balloon into dozens of serial ad-list calls). TrendTrack flags
+ * the brand's actual page(s) with `isPrimary`; prefer those, and only fall
+ * back to pooling everyone when nothing is flagged (some shops don't carry
+ * the flag at all, and legitimate brands can run more than one page).
+ */
+function selectRelevantAdvertisers(advertisers: TrendtrackShopAdvertiser[]): TrendtrackShopAdvertiser[] {
+  const primary = advertisers.filter((a) => a.isPrimary);
+  return primary.length > 0 ? primary : advertisers;
 }
 
 /**
@@ -47,12 +63,16 @@ export async function resolveAdvertiserIds(
     const shopIds = dedupeIds(matches.map((m) => m.shop?.id));
     for (const shopId of shopIds) {
       const advertisers = await trendtrack.getShopAdvertisers(shopId);
-      const ids = dedupeIds(advertisers.map((a) => a.facebookPageId ?? a.id));
+      const relevant = selectRelevantAdvertisers(advertisers);
+      const ids = dedupeIds(relevant.map((a) => a.facebookPageId ?? a.id));
       if (ids.length > 0) {
         logger.info(`Resolved ${ids.length} advertiser page(s) for ${competitor.name} via shop lookup`, {
           domain,
           shopId,
           ids,
+          ...(relevant.length < advertisers.length
+            ? { narrowedFrom: advertisers.length, note: "kept only isPrimary-flagged pages" }
+            : {}),
         });
         return { advertiserIds: ids, source: "lookup" };
       }

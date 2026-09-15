@@ -28,7 +28,58 @@ describe("resolveAdvertiserIds", () => {
     expect(lookup).not.toHaveBeenCalled();
   });
 
-  it("makes a single auto lookup call, then pools every advertiser linked to the matched shop", async () => {
+  it("makes a single auto lookup call, then pools every advertiser linked to the matched shop when none are flagged primary", async () => {
+    const lookup = vi.fn(async () => [
+      {
+        type: "shop",
+        matchType: "exact",
+        matchField: "domain",
+        score: 1,
+        shop: { id: "shop-1", domain: "acme.com", name: "Acme" },
+      },
+    ] as TrendtrackLookupResult[]);
+    const getShopAdvertisers = vi.fn(async () => [
+      { id: "adv-1", facebookPageId: "111" },
+      { id: "adv-2", facebookPageId: "222" },
+    ]);
+    const client = fakeClient({ lookup, getShopAdvertisers });
+
+    const result = await resolveAdvertiserIds(client, competitor);
+    expect(result.source).toBe("lookup");
+    expect(result.advertiserIds.sort()).toEqual(["111", "222"]);
+    expect(lookup).toHaveBeenCalledTimes(1);
+    expect(lookup).toHaveBeenCalledWith("acme.com", { type: "auto", limit: 10 });
+    expect(getShopAdvertisers).toHaveBeenCalledWith("shop-1");
+  });
+
+  it("keeps only the isPrimary-flagged pages when a shop has both real and unrelated linked advertisers", async () => {
+    const lookup = vi.fn(async () => [
+      {
+        type: "shop",
+        matchType: "exact",
+        matchField: "domain",
+        score: 1,
+        shop: { id: "shop-1", domain: "acme.com", name: "Acme" },
+      },
+    ] as TrendtrackLookupResult[]);
+    // Simulates the real-world case: one shop linked to the brand's own page
+    // plus a pile of resellers/affiliates also driving traffic to it.
+    const noise = Array.from({ length: 33 }, (_, i) => ({
+      id: `reseller-${i}`,
+      facebookPageId: `${1000 + i}`,
+      isPrimary: false,
+    }));
+    const getShopAdvertisers = vi.fn(async () => [
+      { id: "adv-1", facebookPageId: "111", isPrimary: true },
+      ...noise,
+    ]);
+    const client = fakeClient({ lookup, getShopAdvertisers });
+
+    const result = await resolveAdvertiserIds(client, competitor);
+    expect(result).toEqual({ advertiserIds: ["111"], source: "lookup" });
+  });
+
+  it("pools multiple pages together when more than one is flagged primary", async () => {
     const lookup = vi.fn(async () => [
       {
         type: "shop",
@@ -40,16 +91,13 @@ describe("resolveAdvertiserIds", () => {
     ] as TrendtrackLookupResult[]);
     const getShopAdvertisers = vi.fn(async () => [
       { id: "adv-1", facebookPageId: "111", isPrimary: true },
-      { id: "adv-2", facebookPageId: "222", isPrimary: false },
+      { id: "adv-2", facebookPageId: "222", isPrimary: true },
+      { id: "adv-3", facebookPageId: "333", isPrimary: false },
     ]);
     const client = fakeClient({ lookup, getShopAdvertisers });
 
     const result = await resolveAdvertiserIds(client, competitor);
-    expect(result.source).toBe("lookup");
     expect(result.advertiserIds.sort()).toEqual(["111", "222"]);
-    expect(lookup).toHaveBeenCalledTimes(1);
-    expect(lookup).toHaveBeenCalledWith("acme.com", { type: "auto", limit: 10 });
-    expect(getShopAdvertisers).toHaveBeenCalledWith("shop-1");
   });
 
   it("uses a direct advertiser match when the domain isn't an indexed shop", async () => {
