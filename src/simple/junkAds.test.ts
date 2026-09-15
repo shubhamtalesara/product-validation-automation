@@ -16,6 +16,16 @@ describe("isJunkAd", () => {
     expect(isJunkAd({ callToAction: "LIKE_PAGE", landingPageUrl: "https://real-shop.com/products/x" })).toBe(true);
   });
 
+  it("flags a VISIT PROFILE ad landing on fb.com's short-link domain", () => {
+    expect(isJunkAd({ callToAction: "VISIT PROFILE", landingPageUrl: "http://fb.com/153437024526775" })).toBe(true);
+  });
+
+  it("flags a VISIT_PROFILE cta even without an fb.com landing page", () => {
+    expect(isJunkAd({ callToAction: "VISIT_PROFILE", landingPageUrl: "https://real-shop.com/products/x" })).toBe(
+      true,
+    );
+  });
+
   it("does not flag a real product ad", () => {
     expect(isJunkAd({ callToAction: "SHOP NOW", landingPageUrl: "https://real-shop.com/products/mouse-pouch" })).toBe(
       false,
