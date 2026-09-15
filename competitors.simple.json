@@ -18,12 +18,8 @@
   ],
   "competitors": [
     {
-      "name": "Primal Remedies",
-      "landingPage": "https://primal-remedies.com/products/ceylon-cinnamon-7200mg"
-    },
-    {
       "name": "Get Lirae",
-      "landingPage": "https://getlirae.com/products/ceylon-cinnamon-7-200mg"
+      "landingPage": "getlirae.com"
     }
   ]
 }
