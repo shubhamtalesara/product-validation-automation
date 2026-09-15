@@ -1,40 +1,20 @@
 {
   "myLandingPages": [
     {
-      "url": "https://get.purevitalic.com/pages/lymphatic-drainage-drops",
+      "url": "https://get.purevitalic.com/pages/natural-prostate-support",
       "type": "PDP",
+      "brandName": "Purevitalic"
+    },
+    {
+      "url": "https://get.purevitalic.com/pages/i-took-every-prostate-adv-5",
+      "type": "ADV",
       "brandName": "Purevitalic"
     }
   ],
   "competitors": [
     {
-      "name": "Natures Roots",
-      "landingPage": "https://trynaturesroots.com /"
-    },
-    {
-      "name": "Native Bloom",
-      "landingPage": "https://trynativebloom.com/"
-    },
-    {
-      "name": "True Nature",
-      "landingPage": "https://trytruenature.com/"
-    },
-    {
-      "name": "Get Elavyn",
-      "landingPage": "https://getelavyn.com/"
-    },
-    {
-      "name": "Lymphlite",
-      "landingPage": "https://lymphlite.com/"
-    },
-    {
-      "name": "Lironava",
-      "landingPage": "https://trylironava.com/"
-    },
-    {
-      "name": "lymphoria",
-      "landingPage": "https://lymphoria.co/"
+      "name": "North Hollow",
+      "landingPage": "https://north-hollow.com"
     }
-
   ]
 }
