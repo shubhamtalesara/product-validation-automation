@@ -435,6 +435,18 @@ async function enrichAd(
         : await enrichTiktokAd(trendtrack, competitor, adId, candidate);
     if (!enriched) return null;
 
+    // Defense-in-depth: the list-summary reach used to filter candidates
+    // can disagree sharply with the detail response's reach (confirmed in
+    // production - a summary reach of 5000+ landing on a detail reach as
+    // low as 23) - re-check the floor against the value that actually ends
+    // up in the sheet, not just the one used to gather candidates.
+    if ((enriched.reach ?? 0) < MIN_REACH) {
+      logger.info(
+        `Skipping ad ${adId} for ${competitor.name} - reach on the detail response (${enriched.reach ?? 0}) is below the ${MIN_REACH} floor even though the list summary passed it`,
+      );
+      return null;
+    }
+
     const landingPageType = classifyLandingPage(enriched.landingPageUrl);
     const myMatch = matchLandingPage(landingPageType, myLandingPages);
     let competitorDomain = "";
