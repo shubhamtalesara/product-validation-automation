@@ -23,6 +23,7 @@ function baseRow(overrides: Partial<SimpleAdRow> = {}): SimpleAdRow {
     thumbnailUrl: "",
     reach: 12345,
     daysRunning: 40,
+    dateCreated: "2026-08-01",
     rank: 1,
     ...overrides,
   };

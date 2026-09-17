@@ -16,6 +16,7 @@ export const SIMPLE_SHEET_COLUMNS = [
   "Media Link",
   "Impressions (Reach)",
   "Days Running",
+  "Date Created",
   "Rank",
   "TrendTrack Ad ID",
   "TrendTrack Preview Link",
@@ -44,6 +45,8 @@ export interface SimpleAdRow {
   thumbnailUrl: string;
   reach: number | null;
   daysRunning: number | null;
+  /** YYYY-MM-DD the ad actually started running (TrendTrack's firstSeenAt/publishedAt, or back-calculated from daysRunning). Empty string if unknown. */
+  dateCreated: string;
   rank: number | null;
 }
 
@@ -81,6 +84,7 @@ export function simpleRowToSheetValues(row: SimpleAdRow): (string | number)[] {
     row.mediaUrl,
     row.reach ?? "",
     row.daysRunning ?? "",
+    row.dateCreated,
     row.rank ?? "",
     row.trendtrackAdId,
     row.trendtrackPreviewUrl,

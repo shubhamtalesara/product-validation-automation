@@ -18,6 +18,8 @@ import { matchLandingPage } from "./matchLandingPage.js";
 import { localizePrimaryText } from "./localize.js";
 import { allocateAdSlots } from "./allocateSlots.js";
 import { selectCandidates } from "./selectCandidates.js";
+import { resolveCreatedDate, isOnOrAfter } from "./createdDate.js";
+import { enforceRecencyQuota, type RecencyCandidate } from "./recencyQuota.js";
 import { extractDomain } from "./domain.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
 
@@ -36,6 +38,13 @@ const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
  * in gatherCandidateGroups.
  */
 const MIN_DAYS_RUNNING = 30;
+
+/** Hard floor: an ad must have actually started running in 2026 or later to ever be considered - older creative is excluded outright, no fallback. */
+const MIN_CREATED_DATE = "2026-01-01";
+
+/** At least this many of the final selection must have started running on or after this date (see enforceRecencyQuota below). */
+const RECENCY_QUOTA_CUTOFF = "2026-06-01";
+const RECENCY_QUOTA_MIN_COUNT = 10;
 
 function metaReach(summary: TrendtrackAdSummary): number | null {
   return summary.metrics?.reach ?? null;
@@ -61,8 +70,10 @@ interface CompetitorResult {
  * src/trendtrack/types.ts) with no shared object shape beyond `daysRunning`,
  * so the raw source object is kept as-is rather than forced into one shape.
  */
-type CompetitorCandidate = DedupCandidate &
-  ({ platform: "Meta"; ad: TrendtrackAdSummary } | { platform: "TikTok"; item: TiktokLibraryItem });
+type CompetitorCandidate = DedupCandidate & { createdDate: string } & (
+    | { platform: "Meta"; ad: TrendtrackAdSummary }
+    | { platform: "TikTok"; item: TiktokLibraryItem }
+  );
 
 interface CandidateGathering {
   competitor: SimpleCompetitor;
@@ -99,6 +110,7 @@ async function gatherMetaCandidates(
 
       const tooYoung = summaries.filter((s) => (s.daysRunning ?? 0) < MIN_DAYS_RUNNING);
       const junk = summaries.filter((s) => isJunkAd(s.content));
+      const tooOld = summaries.filter((s) => !isOnOrAfter(resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null), MIN_CREATED_DATE));
       const qualifying = summaries.filter(
         (s) => (s.daysRunning ?? 0) >= MIN_DAYS_RUNNING && !isJunkAd(s.content),
       );
@@ -109,6 +121,7 @@ async function gatherMetaCandidates(
           advertiserId,
           excludedTooYoung: tooYoung.length,
           excludedJunk: junk.length,
+          excludedBefore2026: tooOld.length,
           daysRunningMissing: summaries.length - daysRunningValues.length,
           daysRunningMin: daysRunningValues.length ? Math.min(...daysRunningValues) : null,
           daysRunningMax: daysRunningValues.length ? Math.max(...daysRunningValues) : null,
@@ -125,6 +138,8 @@ async function gatherMetaCandidates(
       }
       for (const s of summaries) {
         if (isJunkAd(s.content)) continue;
+        const createdDate = resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null);
+        if (!isOnOrAfter(createdDate, MIN_CREATED_DATE)) continue;
         candidates.push({
           platform: "Meta",
           id: s.id,
@@ -132,6 +147,7 @@ async function gatherMetaCandidates(
           advertiserId,
           reach: metaReach(s),
           daysRunning: s.daysRunning ?? null,
+          createdDate,
           ad: s,
         });
       }
@@ -177,12 +193,14 @@ async function gatherTiktokCandidates(
       liveAdsByPage.set(`tiktok:${shopId}`, items.length);
 
       const tooYoung = items.filter((i) => (i.daysRunning ?? 0) < MIN_DAYS_RUNNING);
+      const tooOld = items.filter((i) => !isOnOrAfter(resolveCreatedDate(i.publishedAt, i.daysRunning ?? null), MIN_CREATED_DATE));
       const daysRunningValues = items.map((i) => i.daysRunning).filter((d): d is number => typeof d === "number");
       logger.info(
         `Retrieved ${items.length} active TikTok ads for ${competitor.name} (${items.length - tooYoung.length} qualify: 30+ days running)`,
         {
           shopId,
           excludedTooYoung: tooYoung.length,
+          excludedBefore2026: tooOld.length,
           daysRunningMin: daysRunningValues.length ? Math.min(...daysRunningValues) : null,
           daysRunningMax: daysRunningValues.length ? Math.max(...daysRunningValues) : null,
         },
@@ -195,6 +213,8 @@ async function gatherTiktokCandidates(
         });
       }
       for (const item of items) {
+        const createdDate = resolveCreatedDate(item.publishedAt, item.daysRunning ?? null);
+        if (!isOnOrAfter(createdDate, MIN_CREATED_DATE)) continue;
         candidates.push({
           platform: "TikTok",
           id: item.id,
@@ -202,6 +222,7 @@ async function gatherTiktokCandidates(
           advertiserId: shopId,
           reach: tiktokReach(item),
           daysRunning: item.daysRunning ?? null,
+          createdDate,
           item,
         });
       }
@@ -280,6 +301,7 @@ interface EnrichedContent {
   trendtrackPreviewUrl: string;
   reach: number | null;
   daysRunning: number | null;
+  dateCreated: string;
   rank: number | null;
 }
 
@@ -347,6 +369,7 @@ async function enrichMetaAd(
     trendtrackPreviewUrl,
     reach: detail.metrics?.reach ?? metaReach(candidate.ad),
     daysRunning: detail.daysRunning ?? candidate.daysRunning ?? null,
+    dateCreated: resolveCreatedDate(detail.firstSeenAt ?? candidate.ad.firstSeenAt, detail.daysRunning ?? candidate.daysRunning ?? null) || candidate.createdDate,
     rank: detail.rank?.currentRank ?? detail.rank?.positionInPage ?? null,
   };
 }
@@ -399,6 +422,7 @@ async function enrichTiktokAd(
     trendtrackPreviewUrl: detail.links?.tiktokUrl ?? "",
     reach: detail.metrics?.views ?? tiktokReach(candidate.item),
     daysRunning: detail.daysRunning ?? candidate.daysRunning ?? null,
+    dateCreated: resolveCreatedDate(detail.publishedAt ?? candidate.item.publishedAt, detail.daysRunning ?? candidate.daysRunning ?? null) || candidate.createdDate,
     rank: detail.metrics?.rank ?? null,
   };
 }
@@ -460,6 +484,7 @@ async function enrichAd(
       thumbnailUrl: enriched.thumbnailUrl,
       reach: enriched.reach,
       daysRunning: enriched.daysRunning,
+      dateCreated: enriched.dateCreated,
       rank: enriched.rank,
     };
   } catch (err) {
@@ -552,13 +577,49 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
     allocation: Object.fromEntries(slotsByCompetitor),
   });
 
-  const selected = gatherings.flatMap((gathering) => {
+  const initialSelected = gatherings.flatMap((gathering) => {
     const slots = slotsByCompetitor.get(gathering.competitor.name) ?? 0;
     return [...gathering.groups]
       .sort((a, b) => (b.representative.reach ?? 0) - (a.representative.reach ?? 0))
       .slice(0, slots)
       .map((group) => ({ gathering, group }));
   });
+
+  // Recency quota: at least RECENCY_QUOTA_MIN_COUNT of the final selection
+  // must have started running on/after RECENCY_QUOTA_CUTOFF, even if that
+  // means trading a higher-reach older ad for a lower-reach newer one, and
+  // even if the newer ad belongs to a different competitor than the one it
+  // replaces (this is a global quota across the whole run, not per
+  // competitor - see enforceRecencyQuota).
+  const allEntries = gatherings.flatMap((gathering) =>
+    gathering.groups.map((group) => ({ gathering, group })),
+  );
+  const entryById = new Map(allEntries.map((entry) => [entry.group.representative.id, entry]));
+  const toRecencyCandidate = (entry: { group: DedupGroup<CompetitorCandidate> }): RecencyCandidate => ({
+    id: entry.group.representative.id,
+    createdDate: entry.group.representative.createdDate,
+    reach: entry.group.representative.reach ?? null,
+  });
+
+  const quota = enforceRecencyQuota(
+    initialSelected.map(toRecencyCandidate),
+    allEntries.map(toRecencyCandidate),
+    RECENCY_QUOTA_CUTOFF,
+    RECENCY_QUOTA_MIN_COUNT,
+  );
+  if (quota.swappedIn > 0) {
+    logger.info(
+      `Swapped in ${quota.swappedIn} ad(s) created on/after ${RECENCY_QUOTA_CUTOFF} to satisfy the recency quota`,
+      { minCount: RECENCY_QUOTA_MIN_COUNT },
+    );
+  }
+  if (quota.shortfall > 0) {
+    logger.warn(
+      `Could not fully meet the recency quota - ${quota.shortfall} slot(s) short of ${RECENCY_QUOTA_MIN_COUNT} ads created on/after ${RECENCY_QUOTA_CUTOFF}`,
+      { available: allEntries.filter((e) => e.group.representative.createdDate >= RECENCY_QUOTA_CUTOFF).length },
+    );
+  }
+  const selected = quota.selectedIds.map((id) => entryById.get(id)!);
 
   const resultsByCompetitor = new Map<string, CompetitorResult>(
     gatherings.map((g) => [

@@ -183,15 +183,30 @@ Each row is one winning ad, with:
   type, and the type label you gave it. Blank until you add entries.
 - **Media Type** / **Creative Preview** / **Media Link** — image or video,
   an inline visual preview of the actual creative, and the direct file URL.
-- **Impressions (Reach)**, **Days Running**, **Rank** — performance signals
-  (for TikTok ads, this is views, TikTok's closest equivalent to reach).
-  Ads that have been running **at least 30 days** are preferred as
-  validated winners, and any Meta page-engagement/"Like Page" ad with no
-  real landing page is always excluded. If a competitor has no ad that old
-  yet on either platform (they're mid-cycle on fresh creative testing), the
-  30-day preference is relaxed for just that competitor so their best
+- **Impressions (Reach)**, **Days Running**, **Date Created**, **Rank** —
+  performance signals (for TikTok ads, reach is views, TikTok's closest
+  equivalent). Date Created is the real date TrendTrack observed the ad
+  actually start running (`firstSeenAt` for Meta, `publishedAt` for TikTok
+  — never TrendTrack's own record-creation timestamp, which lags behind
+  and isn't the ad's real launch date); if that field is ever missing, it's
+  back-calculated from Days Running instead. Ads that have been running
+  **at least 30 days** are preferred as validated winners, and any Meta
+  page-engagement/"Like Page"/"Visit Profile" ad with no real landing page
+  is always excluded. If a competitor has no ad that old yet on either
+  platform (they're mid-cycle on fresh creative testing), the 30-day
+  preference is relaxed for just that competitor so their best
   currently-active ads still show up instead of the competitor vanishing
   from the sheet entirely.
+
+  Two more rules sit on top of that: **every** selected ad must have
+  started running in **2026 or later** (older creative is dropped outright,
+  no exceptions or fallback), and **at least 10 of the final 30** must have
+  started running **on or after June 2026** — if that quota isn't met by
+  the normal best-by-reach selection, the lowest-reach pre-June ad(s) are
+  swapped out for the best-reach post-June ad(s) available from *any*
+  competitor's pool, even if that ad has less reach than what it replaces.
+  Recency wins over reach for this quota; a warning is logged if not enough
+  post-June ads exist anywhere to fill it.
 - **TrendTrack Ad ID** / **TrendTrack Preview Link** — click the preview
   link to open the actual ad (TrendTrack's own viewer for Meta ads, the
   real TikTok video page for TikTok ads).

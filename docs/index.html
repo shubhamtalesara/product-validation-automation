@@ -134,6 +134,7 @@ function renderCard(ad) {
         <div class="stats">
           <span class="badge">👁 ${fmtNumber(ad.reach)} ${ad.platform === "TikTok" ? "views" : "impressions"}</span>
           <span class="badge">📅 ${ad.daysRunning ?? "—"}d running</span>
+          ${ad.dateCreated ? `<span class="badge">🗓 ${escapeHtml(ad.dateCreated)}</span>` : ""}
           ${ad.cta ? `<span class="badge">${escapeHtml(ad.cta)}</span>` : ""}
         </div>
         <div class="spacer"></div>
