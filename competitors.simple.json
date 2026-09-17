@@ -5,28 +5,10 @@
       "type": "listicle-advertorial",
       "brandName": "Wellvi"
     },
-    {
-      "url": "https://get.trywellvi.com/pages/wellvi-soap-pdp",
-      "type": "PDP",
-      "brandName": "Wellvi"
-    }
-  ],
   "competitors": [
     {
-      "name": "Mirai Clinical",
-      "landingPage": "https://miraiclinical.com "
-    },
-    {
-      "name": "Kaori",
-      "landingPage": "https://try-kaori.com "
-    },
-    {
-      "name": "Swarva",
-      "landingPage": "https://swarva.com "
-    },
-    {
-      "name": "Okari Care",
-      "landingPage": "https://okaricare.com "
+      "name": "Hemios",
+      "landingPage": "myhemios.com"
     }
   ]
 }
