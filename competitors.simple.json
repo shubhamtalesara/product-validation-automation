@@ -1,19 +1,19 @@
 {
   "myLandingPages": [
     {
-      "url": "https://get.trywellvi.com/pages/wellvi-soap-lis",
+      "url": "https://get.trywellvi.com/pages/barefoot-shoes-pdp",
       "type": "listicle-advertorial",
       "brandName": "Wellvi"
     }
   ],
   "competitors": [
     {
-      "name": "Hemios",
-      "landingPage": "myhemios.com"
+      "name": "bronoir",
+      "landingPage": "trybronoir.com"
     },
     {
-      "name": "Hematix",
-      "landingPage": "myhematix.com"
+      "name": "grounding co",
+      "landingPage": "grounding.co"
     }
   ]
 }
