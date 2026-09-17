@@ -3,6 +3,8 @@ export const SIMPLE_SHEET_COLUMNS = [
   "Platform",
   "Page / Profile Name",
   "Ad Set",
+  "Angle",
+  "Offer",
   "Headline",
   "Primary Text",
   "Localized Primary Text",
@@ -30,6 +32,10 @@ export interface SimpleAdRow {
   /** Facebook Page name for a Meta ad, or TikTok profile/handle for a TikTok ad. */
   pageName: string;
   adSet: string;
+  /** Keyword-classified pain-point/topic (e.g. "Erectile Dysfunction") from your configured `angles` list. "" if angles aren't configured; "Uncategorized" if configured but nothing matched. */
+  angle: string;
+  /** Same mechanism as `angle`, for offer/promo type (e.g. "BOGO") from your configured `offers` list. */
+  offer: string;
   trendtrackAdId: string;
   trendtrackPreviewUrl: string;
   headline: string;
@@ -71,6 +77,8 @@ export function simpleRowToSheetValues(row: SimpleAdRow): (string | number)[] {
     row.platform,
     row.pageName,
     row.adSet,
+    row.angle,
+    row.offer,
     row.headline,
     row.primaryText,
     row.localizedPrimaryText,

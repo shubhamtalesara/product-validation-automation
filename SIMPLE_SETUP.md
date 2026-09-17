@@ -124,6 +124,40 @@ The `competitors.simple.json` in this repo already has an empty
 `"myLandingPages": []` waiting for you — edit that file, add `"myBrand"`
 and fill in your pages following the example above.
 
+### Optional: split ad sets by angle and offer
+
+If your competitors run the same product against several different pain
+points (e.g. a supplement pitched for both "erectile dysfunction" and
+"nerve pain"), add `angles` (and/or `offers`) to `competitors.simple.json`
+so ads get grouped into separate ad sets by topic and promo type, not just
+platform and format:
+
+```json
+{
+  "angles": [
+    { "name": "Erectile Dysfunction", "keywords": ["erectile", "erection", "ed pill"] },
+    { "name": "Nerve Pain", "keywords": ["nerve pain", "neuropathy", "tingling", "numbness"] }
+  ],
+  "offers": [
+    { "name": "Percent Off", "keywords": ["% off", "percent off", "discount"] },
+    { "name": "BOGO", "keywords": ["buy one get one", "bogo", "buy 2 get 1"] }
+  ]
+}
+```
+
+Each ad's headline + primary text (+ landing page URL, for angle) is
+scanned against your keyword lists, case-insensitively; the **first rule
+in the list** whose keyword appears is the match, so put more specific
+rules first if two rules could both match the same ad. This is plain
+keyword matching, not AI — it won't catch euphemistic copy that avoids
+your literal keywords, so check the sheet's new **Angle**/**Offer**
+columns periodically and add keywords for anything landing in
+"Uncategorized."
+
+This is entirely optional — leave `angles`/`offers` out (or `[]`) and
+nothing changes: every ad's Angle/Offer column stays blank and ad sets
+group exactly as they did before.
+
 ## 5. Turn on your dashboard website
 
 In this repository: **Settings** → **Pages** → under "Build and
@@ -160,6 +194,11 @@ Each row is one winning ad, with:
   (Facebook Page name) or TikTok profiles ran it. A brand can run more than
   one page/profile per platform.
 - **Ad Set** — see "Ad set clubbing" below.
+- **Angle** / **Offer** — which configured pain-point/topic and which
+  offer/promo type this ad's copy matched, from your optional `angles` /
+  `offers` lists (see step 4). Blank if you haven't configured either;
+  `"Uncategorized"` if you have but this ad's copy didn't match any of
+  your keywords.
 - **Headline** — TrendTrack's own headline field when it has one; when it
   doesn't (common — most ads only have body copy), falls back to a short
   link-description field if TrendTrack has one, and only as a last resort
@@ -208,12 +247,18 @@ Each row is one winning ad, with:
 ### Ad set clubbing
 
 The selected ads are also grouped into ready-to-launch ad sets (labeled
-e.g. "Ad Set 1 (Meta Video)", "Ad Set 2 (TikTok Video)", "Ad Set 3 (Meta
-Static)") so you can hand a whole sheet section straight to whoever builds
-your campaigns: each set has at most 5 ads, and a set never mixes video
-with static (image) ads, or Meta with TikTok — a leftover handful of one
-format/platform still gets its own (smaller) set rather than being mixed
-in.
+e.g. "Ad Set 1 (Meta / Video)", "Ad Set 2 (TikTok / Video)") so you can
+hand a whole sheet section straight to whoever builds your campaigns: each
+set has at most 5 ads, and a set never mixes video with static (image)
+ads, or Meta with TikTok — a leftover handful of one format/platform still
+gets its own (smaller) set rather than being mixed in.
+
+If you've configured `angles`/`offers` (see step 4), those become two more
+grouping dimensions on top of platform and format, so e.g. an Erectile
+Dysfunction video ad with a BOGO offer never lands in the same set as a
+Nerve Pain video ad, even though both are Meta videos: "Ad Set 3 (Meta /
+Erectile Dysfunction / BOGO / Video)". Leave `angles`/`offers` unconfigured
+and labels look exactly like the platform/format-only example above.
 
 ## Troubleshooting a specific ad's data
 
