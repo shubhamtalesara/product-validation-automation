@@ -7,12 +7,14 @@ clicking buttons in websites you already use (Google, GitHub) — no
 terminal, no code.
 
 You list as many competitors as you want (2, 10, 30 - no limit). The
-system fills `SIMPLE_TOTAL_AD_COUNT` slots (default 30) total, split across
-your competitors in proportion to how many live ads each one is running -
-a competitor running far more ads than the others earns more of the
-slots, but every competitor with at least one qualifying ad is guaranteed
-at least one slot. Nobody gets shut out just because another competitor
-happens to have higher-reach ads.
+system fills two buckets: `SIMPLE_HIGH_REACH_AD_COUNT` slots (default 18)
+picked purely by impressions, split across your competitors in proportion
+to how many live ads each one is running - a competitor running far more
+ads than the others earns more of the slots, but every competitor with at
+least one eligible ad is guaranteed at least one slot - plus
+`SIMPLE_RECENT_AD_COUNT` more slots (default 12) picked purely by
+impressions from ads created since June 2026, with no competitor
+weighting (see "How the final 30 are chosen" below).
 
 Total time: about 10 minutes, once.
 
@@ -137,8 +139,8 @@ sidebar) → **Run workflow** button → **Run workflow**. Wait about a minute,
 then:
 
 - Refresh your **Google Sheet** — a new tab called "Competitor Ads" will
-  have the best 30 (or however many you've set) highest-impression ads
-  across all of your competitors.
+  have the best ads across all of your competitors (18 by pure impressions
+  plus 12 created since June 2026, or however many you've set).
 - Refresh your **dashboard URL** from step 5 — you'll see the same ads as
   visual cards (thumbnail, headline, copy, impressions, days running, link
   to their landing page).
@@ -189,24 +191,16 @@ Each row is one winning ad, with:
   actually start running (`firstSeenAt` for Meta, `publishedAt` for TikTok
   — never TrendTrack's own record-creation timestamp, which lags behind
   and isn't the ad's real launch date); if that field is ever missing, it's
-  back-calculated from Days Running instead. Ads that have been running
-  **at least 30 days** are preferred as validated winners, and any Meta
-  page-engagement/"Like Page"/"Visit Profile" ad with no real landing page
-  is always excluded. If a competitor has no ad that old yet on either
-  platform (they're mid-cycle on fresh creative testing), the 30-day
-  preference is relaxed for just that competitor so their best
-  currently-active ads still show up instead of the competitor vanishing
-  from the sheet entirely.
+  back-calculated from Days Running instead.
 
-  Two more rules sit on top of that: **every** selected ad must have
-  started running in **2026 or later** (older creative is dropped outright,
-  no exceptions or fallback), and **at least 10 of the final 30** must have
-  started running **on or after June 2026** — if that quota isn't met by
-  the normal best-by-reach selection, the lowest-reach pre-June ad(s) are
-  swapped out for the best-reach post-June ad(s) available from *any*
-  competitor's pool, even if that ad has less reach than what it replaces.
-  Recency wins over reach for this quota; a warning is logged if not enough
-  post-June ads exist anywhere to fill it.
+  Three hard rules decide which ads ever make it into the sheet, with no
+  exceptions or fallback for any of them: any Meta page-engagement/"Like
+  Page"/"Visit Profile" ad with no real landing page is always excluded;
+  every ad must have **at least 5,000 impressions/views**; and every ad
+  must have started running in **2026 or later**.
+
+  On top of that, the final selection is two separate buckets - see "How
+  the final ads are chosen" below.
 - **TrendTrack Ad ID** / **TrendTrack Preview Link** — click the preview
   link to open the actual ad (TrendTrack's own viewer for Meta ads, the
   real TikTok video page for TikTok ads).
@@ -247,8 +241,9 @@ pages, both are covered automatically — you never have to hunt for a
 
 Every sync pulls ads from **both** Meta (Facebook/Instagram) and TikTok for
 each competitor — TrendTrack indexes them as two separate libraries, and
-both get pooled into the same sheet, same slot allocation, and same
-30-day-preference/fallback rule described above. TikTok ads are resolved
+both get pooled into the same sheet, subject to the same reach/2026
+floors and the same two-bucket selection described above. TikTok ads are
+resolved
 from the same domain lookup as Meta (no separate ID to configure), fetched
 as `active`, paid `ad`-type items only (never someone's organic/non-ad
 video), and marked `TikTok` in the **Platform** column so you can always
@@ -256,18 +251,31 @@ tell which platform an ad came from. If you only want Meta ads, set
 `SIMPLE_FETCH_TIKTOK=false` as a repository secret/variable (or in your
 `.env` for local runs) and re-run the sync.
 
-## How ad slots are split across competitors
+## How the final ads are chosen
 
-Instead of one global "best 30 by impressions" list (which let one
-high-reach competitor crowd everyone else out), each competitor's share of
-the total slots is set by their own total live-ad count relative to
-everyone else's — a competitor running 400 live ads earns proportionally
-more slots than one running 8, but that one still always gets at least
-one slot as long as they have at least one qualifying ad. Within its own
+The sheet is filled by two separate, non-overlapping buckets rather than
+one global "best N by impressions" list:
+
+**Bucket 1 - `SIMPLE_HIGH_REACH_AD_COUNT` ads (default 18), any date.**
+Instead of a single global ranking (which would let one high-reach
+competitor crowd everyone else out), each competitor's share of these
+slots is set by their own total live-ad count relative to everyone
+else's — a competitor running 400 live ads earns proportionally more
+slots than one running 8, but that one still always gets at least one
+slot as long as they have at least one eligible ad. Within its own
 allocation, each competitor's best ads (by impressions) are picked. This
 is a fixed arithmetic rule (largest-remainder apportionment, the same
 method used to divide parliamentary seats by population) — not an AI
 judgment call, and it never produces an even split either.
+
+**Bucket 2 - `SIMPLE_RECENT_AD_COUNT` ads (default 12), created since June
+2026.** From whatever's left after Bucket 1 (no double-counting), this
+takes the single best-reach ads that started running on or after June
+2026 — no competitor weighting, purely the top performers by impressions.
+If there aren't enough eligible post-June ads to fill this bucket, it's
+backfilled with the next-best-reach remaining ads (any date) so the sheet
+still fills out fully whenever there's enough inventory overall - a
+warning is logged when that happens.
 
 ## What if a competitor's ads don't show up?
 

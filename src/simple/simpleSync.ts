@@ -17,9 +17,7 @@ import { clubIntoAdSets } from "./adSets.js";
 import { matchLandingPage } from "./matchLandingPage.js";
 import { localizePrimaryText } from "./localize.js";
 import { allocateAdSlots } from "./allocateSlots.js";
-import { selectCandidates } from "./selectCandidates.js";
 import { resolveCreatedDate, isOnOrAfter } from "./createdDate.js";
-import { enforceRecencyQuota, type RecencyCandidate } from "./recencyQuota.js";
 import { extractDomain } from "./domain.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
 
@@ -27,24 +25,21 @@ const logger = createLogger("simple-sync");
 const projectRoot = resolve(dirname(fileURLToPath(import.meta.url)), "../..");
 const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
 
-/**
- * A creative must have been running at least this many days to count as a
- * validated winner rather than a fresh test TrendTrack just started
- * tracking. This is a preference, not a hard requirement: a competitor who
- * is mid-cycle on fresh creative testing right now can legitimately have
- * zero ads this old on every one of their pages, and excluding them
- * entirely in that case would silently drop a whole competitor from the
- * sheet instead of just deprioritizing their newer ads. See the fallback
- * in gatherCandidateGroups.
- */
-const MIN_DAYS_RUNNING = 30;
-
 /** Hard floor: an ad must have actually started running in 2026 or later to ever be considered - older creative is excluded outright, no fallback. */
 const MIN_CREATED_DATE = "2026-01-01";
 
-/** At least this many of the final selection must have started running on or after this date (see enforceRecencyQuota below). */
-const RECENCY_QUOTA_CUTOFF = "2026-06-01";
-const RECENCY_QUOTA_MIN_COUNT = 10;
+/** Hard floor: an ad below this reach/views never enters the candidate pool, regardless of how long it's been running. */
+const MIN_REACH = 5000;
+
+/**
+ * Final selection is two disjoint buckets: env.SIMPLE_HIGH_REACH_AD_COUNT
+ * ads picked purely by reach (any 2026+ date), split proportionally across
+ * competitors by weight; then env.SIMPLE_RECENT_AD_COUNT more picked purely
+ * by reach among the *remaining* (not already selected) ads that started
+ * running on/after RECENT_BUCKET_CUTOFF, with no per-competitor weighting -
+ * a global top-N. See the bucket construction in runSimpleSync.
+ */
+const RECENT_BUCKET_CUTOFF = "2026-06-01";
 
 function metaReach(summary: TrendtrackAdSummary): number | null {
   return summary.metrics?.reach ?? null;
@@ -108,23 +103,22 @@ async function gatherMetaCandidates(
         ?.liveAdsCount;
       if (typeof liveAdsCount === "number") liveAdsByPage.set(`meta:${advertiserId}`, liveAdsCount);
 
-      const tooYoung = summaries.filter((s) => (s.daysRunning ?? 0) < MIN_DAYS_RUNNING);
       const junk = summaries.filter((s) => isJunkAd(s.content));
       const tooOld = summaries.filter((s) => !isOnOrAfter(resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null), MIN_CREATED_DATE));
-      const qualifying = summaries.filter(
-        (s) => (s.daysRunning ?? 0) >= MIN_DAYS_RUNNING && !isJunkAd(s.content),
+      const tooLowReach = summaries.filter((s) => (metaReach(s) ?? 0) < MIN_REACH);
+      const eligible = summaries.filter(
+        (s) =>
+          !isJunkAd(s.content) &&
+          isOnOrAfter(resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null), MIN_CREATED_DATE) &&
+          (metaReach(s) ?? 0) >= MIN_REACH,
       );
-      const daysRunningValues = summaries.map((s) => s.daysRunning).filter((d): d is number => typeof d === "number");
       logger.info(
-        `Retrieved ${summaries.length} active Meta ads for ${competitor.name} (${qualifying.length} qualify: 30+ days running, not a page-engagement/junk ad)`,
+        `Retrieved ${summaries.length} active Meta ads for ${competitor.name} (${eligible.length} eligible: 2026+, ${MIN_REACH}+ reach, not junk)`,
         {
           advertiserId,
-          excludedTooYoung: tooYoung.length,
           excludedJunk: junk.length,
           excludedBefore2026: tooOld.length,
-          daysRunningMissing: summaries.length - daysRunningValues.length,
-          daysRunningMin: daysRunningValues.length ? Math.min(...daysRunningValues) : null,
-          daysRunningMax: daysRunningValues.length ? Math.max(...daysRunningValues) : null,
+          excludedLowReach: tooLowReach.length,
         },
       );
       if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
@@ -140,12 +134,14 @@ async function gatherMetaCandidates(
         if (isJunkAd(s.content)) continue;
         const createdDate = resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null);
         if (!isOnOrAfter(createdDate, MIN_CREATED_DATE)) continue;
+        const reach = metaReach(s);
+        if ((reach ?? 0) < MIN_REACH) continue;
         candidates.push({
           platform: "Meta",
           id: s.id,
           collationId: s.collationId ?? null,
           advertiserId,
-          reach: metaReach(s),
+          reach,
           daysRunning: s.daysRunning ?? null,
           createdDate,
           ad: s,
@@ -192,17 +188,19 @@ async function gatherTiktokCandidates(
       // at poolSize) is used as a proxy for slot-allocation weight instead.
       liveAdsByPage.set(`tiktok:${shopId}`, items.length);
 
-      const tooYoung = items.filter((i) => (i.daysRunning ?? 0) < MIN_DAYS_RUNNING);
       const tooOld = items.filter((i) => !isOnOrAfter(resolveCreatedDate(i.publishedAt, i.daysRunning ?? null), MIN_CREATED_DATE));
-      const daysRunningValues = items.map((i) => i.daysRunning).filter((d): d is number => typeof d === "number");
+      const tooLowReach = items.filter((i) => (tiktokReach(i) ?? 0) < MIN_REACH);
+      const eligible = items.filter(
+        (i) =>
+          isOnOrAfter(resolveCreatedDate(i.publishedAt, i.daysRunning ?? null), MIN_CREATED_DATE) &&
+          (tiktokReach(i) ?? 0) >= MIN_REACH,
+      );
       logger.info(
-        `Retrieved ${items.length} active TikTok ads for ${competitor.name} (${items.length - tooYoung.length} qualify: 30+ days running)`,
+        `Retrieved ${items.length} active TikTok ads for ${competitor.name} (${eligible.length} eligible: 2026+, ${MIN_REACH}+ views)`,
         {
           shopId,
-          excludedTooYoung: tooYoung.length,
           excludedBefore2026: tooOld.length,
-          daysRunningMin: daysRunningValues.length ? Math.min(...daysRunningValues) : null,
-          daysRunningMax: daysRunningValues.length ? Math.max(...daysRunningValues) : null,
+          excludedLowReach: tooLowReach.length,
         },
       );
       if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
@@ -215,12 +213,14 @@ async function gatherTiktokCandidates(
       for (const item of items) {
         const createdDate = resolveCreatedDate(item.publishedAt, item.daysRunning ?? null);
         if (!isOnOrAfter(createdDate, MIN_CREATED_DATE)) continue;
+        const reach = tiktokReach(item);
+        if ((reach ?? 0) < MIN_REACH) continue;
         candidates.push({
           platform: "TikTok",
           id: item.id,
           collationId: null,
           advertiserId: shopId,
-          reach: tiktokReach(item),
+          reach,
           daysRunning: item.daysRunning ?? null,
           createdDate,
           item,
@@ -239,19 +239,18 @@ async function gatherTiktokCandidates(
  * Gathers and dedupes active ads for one competitor from both Meta and
  * TikTok (TikTok fetch skipped entirely when SIMPLE_FETCH_TIKTOK=false), and
  * groups them into creative-concept groups (cheap: list endpoints only, no
- * per-ad detail calls yet). Always drops Meta page-engagement/junk ads.
- * Prefers ads that have run at least MIN_DAYS_RUNNING days across BOTH
- * platforms combined, but falls back to the competitor's best
- * currently-active ads when none of theirs are that old yet, so a
- * competitor never gets shut out of the sheet just because they're mid-cycle
- * on fresh creative testing. Also computes this competitor's total live-ad
- * count (summed once per distinct page/shop) for weighted slot allocation.
+ * per-ad detail calls yet). Every candidate must clear three hard floors
+ * before it's even considered: not a Meta page-engagement/junk ad, started
+ * running in 2026 or later, and at least MIN_REACH reach/views - there is
+ * no fallback for any of these, unlike the old 30-day-running preference
+ * they replaced. Also computes this competitor's total live-ad count
+ * (summed once per distinct page/shop) for weighted slot allocation.
  */
 async function gatherCandidateGroups(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
 ): Promise<CandidateGathering> {
-  const poolSize = Math.max(env.SIMPLE_TOTAL_AD_COUNT * 3, 50);
+  const poolSize = Math.max((env.SIMPLE_HIGH_REACH_AD_COUNT + env.SIMPLE_RECENT_AD_COUNT) * 3, 50);
 
   // One resolution call covers both platforms - Meta's advertiserIds and
   // TikTok's shopIds both come off the same /v1/lookup, so a slow lookup
@@ -267,16 +266,7 @@ async function gatherCandidateGroups(
     ? await gatherTiktokCandidates(trendtrack, competitor, resolved.shopIds, poolSize)
     : { candidates: [] as CompetitorCandidate[], liveAdsByPage: new Map<string, number>() };
 
-  const allCandidates = [...meta.candidates, ...tiktok.candidates];
-  const { chosen, usingFallback } = selectCandidates(allCandidates, MIN_DAYS_RUNNING);
-  if (usingFallback) {
-    logger.warn(
-      `No ads for ${competitor.name} have run ${MIN_DAYS_RUNNING}+ days yet - falling back to their best currently active ads instead of excluding this competitor`,
-      { candidateCount: chosen.length },
-    );
-  }
-
-  const groups = dedupeCreatives(chosen);
+  const groups = dedupeCreatives([...meta.candidates, ...tiktok.candidates]);
   const liveAdsByPage = new Map([...meta.liveAdsByPage, ...tiktok.liveAdsByPage]);
   const weight = [...liveAdsByPage.values()].reduce((sum, n) => sum + n, 0);
   logger.info(`Deduplicated to ${groups.length} unique creative concepts for ${competitor.name}`, { weight });
@@ -550,12 +540,19 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
 }
 
 /**
- * Selects `SIMPLE_TOTAL_AD_COUNT` ads total, split across competitors
- * proportionally to each one's live-ad count (see allocateAdSlots) rather
- * than a single global top-N by reach - a competitor running far more ads
- * than the others earns more slots, but everyone with at least one
- * qualifying ad gets at least one, so nobody gets shut out by a single
- * high-reach competitor.
+ * Selects (SIMPLE_HIGH_REACH_AD_COUNT + SIMPLE_RECENT_AD_COUNT) ads total
+ * as two disjoint buckets:
+ *  - SIMPLE_HIGH_REACH_AD_COUNT picked purely by reach, with no preference
+ *    for when they were created, split across competitors proportionally
+ *    to each one's live-ad count (see allocateAdSlots) rather than a
+ *    single global top-N - a competitor running far more ads than the
+ *    others earns more slots, but everyone with at least one eligible ad
+ *    gets at least one.
+ *  - SIMPLE_RECENT_AD_COUNT more, picked purely by reach (no competitor
+ *    weighting) from whatever's left that started running on/after
+ *    RECENT_BUCKET_CUTOFF - if that pool comes up short, the shortfall is
+ *    backfilled with the next-best-reach remaining ads (any date) so the
+ *    total still reaches the full count whenever enough inventory exists.
  */
 export async function runSimpleSync(): Promise<CompetitorResult[]> {
   logger.info("Starting simple competitor ad sync", { fetchTiktok: env.SIMPLE_FETCH_TIKTOK });
@@ -569,57 +566,59 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
     competitors.map((competitor) => gatherCandidateGroups(trendtrack, competitor)),
   );
 
-  const slotsByCompetitor = allocateAdSlots(
+  // Bucket A: SIMPLE_HIGH_REACH_AD_COUNT ads picked purely by reach, any
+  // date, split across competitors proportionally to weight.
+  const highReachSlots = allocateAdSlots(
     gatherings.map((g) => ({ name: g.competitor.name, weight: g.weight, available: g.groups.length })),
-    env.SIMPLE_TOTAL_AD_COUNT,
+    env.SIMPLE_HIGH_REACH_AD_COUNT,
   );
-  logger.info("Allocated ad slots per competitor by live-ad weight", {
-    allocation: Object.fromEntries(slotsByCompetitor),
+  logger.info("Allocated high-reach bucket slots per competitor by live-ad weight", {
+    allocation: Object.fromEntries(highReachSlots),
   });
 
-  const initialSelected = gatherings.flatMap((gathering) => {
-    const slots = slotsByCompetitor.get(gathering.competitor.name) ?? 0;
+  const highReachBucket = gatherings.flatMap((gathering) => {
+    const slots = highReachSlots.get(gathering.competitor.name) ?? 0;
     return [...gathering.groups]
       .sort((a, b) => (b.representative.reach ?? 0) - (a.representative.reach ?? 0))
       .slice(0, slots)
       .map((group) => ({ gathering, group }));
   });
 
-  // Recency quota: at least RECENCY_QUOTA_MIN_COUNT of the final selection
-  // must have started running on/after RECENCY_QUOTA_CUTOFF, even if that
-  // means trading a higher-reach older ad for a lower-reach newer one, and
-  // even if the newer ad belongs to a different competitor than the one it
-  // replaces (this is a global quota across the whole run, not per
-  // competitor - see enforceRecencyQuota).
+  // Bucket B: SIMPLE_RECENT_AD_COUNT more, picked purely by reach (no
+  // per-competitor weighting) from whatever's left that started running
+  // on/after RECENT_BUCKET_CUTOFF. Shortfall is backfilled from the
+  // remaining pool by reach (any date) so the total still reaches the
+  // full count whenever enough inventory exists.
   const allEntries = gatherings.flatMap((gathering) =>
     gathering.groups.map((group) => ({ gathering, group })),
   );
-  const entryById = new Map(allEntries.map((entry) => [entry.group.representative.id, entry]));
-  const toRecencyCandidate = (entry: { group: DedupGroup<CompetitorCandidate> }): RecencyCandidate => ({
-    id: entry.group.representative.id,
-    createdDate: entry.group.representative.createdDate,
-    reach: entry.group.representative.reach ?? null,
-  });
+  const usedIds = new Set(highReachBucket.map((e) => e.group.representative.id));
 
-  const quota = enforceRecencyQuota(
-    initialSelected.map(toRecencyCandidate),
-    allEntries.map(toRecencyCandidate),
-    RECENCY_QUOTA_CUTOFF,
-    RECENCY_QUOTA_MIN_COUNT,
-  );
-  if (quota.swappedIn > 0) {
-    logger.info(
-      `Swapped in ${quota.swappedIn} ad(s) created on/after ${RECENCY_QUOTA_CUTOFF} to satisfy the recency quota`,
-      { minCount: RECENCY_QUOTA_MIN_COUNT },
-    );
-  }
-  if (quota.shortfall > 0) {
+  const recentBucket = allEntries
+    .filter((e) => !usedIds.has(e.group.representative.id) && e.group.representative.createdDate >= RECENT_BUCKET_CUTOFF)
+    .sort((a, b) => (b.group.representative.reach ?? 0) - (a.group.representative.reach ?? 0))
+    .slice(0, env.SIMPLE_RECENT_AD_COUNT);
+  for (const e of recentBucket) usedIds.add(e.group.representative.id);
+
+  if (recentBucket.length < env.SIMPLE_RECENT_AD_COUNT) {
     logger.warn(
-      `Could not fully meet the recency quota - ${quota.shortfall} slot(s) short of ${RECENCY_QUOTA_MIN_COUNT} ads created on/after ${RECENCY_QUOTA_CUTOFF}`,
-      { available: allEntries.filter((e) => e.group.representative.createdDate >= RECENCY_QUOTA_CUTOFF).length },
+      `Could not fill the ${env.SIMPLE_RECENT_AD_COUNT}-ad recency bucket - only found ${recentBucket.length} eligible ad(s) created on/after ${RECENT_BUCKET_CUTOFF} that weren't already in the high-reach bucket`,
     );
   }
-  const selected = quota.selectedIds.map((id) => entryById.get(id)!);
+
+  const backfillNeeded = env.SIMPLE_RECENT_AD_COUNT - recentBucket.length;
+  const backfillBucket =
+    backfillNeeded > 0
+      ? allEntries
+          .filter((e) => !usedIds.has(e.group.representative.id))
+          .sort((a, b) => (b.group.representative.reach ?? 0) - (a.group.representative.reach ?? 0))
+          .slice(0, backfillNeeded)
+      : [];
+  if (backfillBucket.length > 0) {
+    logger.info(`Backfilled ${backfillBucket.length} additional high-reach ad(s) to make up the recency-bucket shortfall`);
+  }
+
+  const selected = [...highReachBucket, ...recentBucket, ...backfillBucket];
 
   const resultsByCompetitor = new Map<string, CompetitorResult>(
     gatherings.map((g) => [
