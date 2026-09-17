@@ -1,20 +1,40 @@
 {
   "myLandingPages": [
     {
-      "url": "https://get.trywellvi.com/pages/barefoot-shoes-pdp",
-      "type": "listicle-advertorial",
+      "url": "https://get.trywellvi.com/pages/7-reasons-why-adv-2",
+      "type": "listicle",
+      "brandName": "Wellvi"
+    },
+    {
+      "url": "https://get.trywellvi.com/pages/bras-forever",
+      "type": "PDP",
       "brandName": "Wellvi"
     }
   ],
   "competitors": [
     {
-      "name": "bronoir",
-      "landingPage": "trybronoir.com"
+      "name": "Maggies Tanks",
+      "landingPage": "https://maggies-tanks.com/"
     },
     {
-      "name": "grounding co",
-      "landingPage": "grounding.co"
+      "name": "Avouria",
+      "landingPage": "https://avouria.com/"
+    },
+    {
+      "name": "Lunara Comfort",
+      "landingPage": "https://www.lunara-comfort.com/"
+    },
+    {
+      "name": "Bellesimone",
+      "landingPage": "https://bellesimone.com/"
+    },
+    {
+      "name": "Velcy",
+      "landingPage": "https://www.velcy.co/"
+    },
+    {
+      "name": "Sofuna",
+      "landingPage": "https://sofuna.com/"
     }
   ]
 }
-
