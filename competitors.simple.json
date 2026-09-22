@@ -1,40 +1,24 @@
 {
   "myLandingPages": [
     {
-      "url": "https://get.trywellvi.com/pages/7-reasons-why-adv-2",
-      "type": "listicle",
+      "url": "https://offers.trywellvi.com/pages/lung-spray",
+      "type": "PDP",
       "brandName": "Wellvi"
     },
     {
-      "url": "https://get.trywellvi.com/pages/bras-forever",
-      "type": "PDP",
+      "url": "https://offers.trywellvi.com/pages/lung-spray-listicle-v4",
+      "type": "listicle",
       "brandName": "Wellvi"
     }
   ],
   "competitors": [
     {
-      "name": "Maggies Tanks",
-      "landingPage": "https://maggies-tanks.com/"
+      "name": "VelvaFlow",
+      "landingPage": "https://velvaflow.com/"
     },
     {
-      "name": "Avouria",
-      "landingPage": "https://avouria.com/"
-    },
-    {
-      "name": "Lunara Comfort",
-      "landingPage": "https://www.lunara-comfort.com/"
-    },
-    {
-      "name": "Bellesimone",
-      "landingPage": "https://bellesimone.com/"
-    },
-    {
-      "name": "Velcy",
-      "landingPage": "https://www.velcy.co/"
-    },
-    {
-      "name": "Sofuna",
-      "landingPage": "https://sofuna.com/"
+      "name": "Naturva Health",
+      "landingPage": "https://naturvahealth.com/"
     }
   ]
 }
