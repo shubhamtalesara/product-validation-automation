@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-22T02:58:49.901Z",
+  "generatedAt": "2026-09-22T10:29:23.013Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
@@ -113,8 +113,8 @@
           "mediaType": "video",
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/725d7dc3200805f30b3e16aaf27d630823917e44e89d4c1e6b7873bc2941ac17.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/1b6ae183ae10de1c78d4975e16fd03828afc4c28cc0023fd6dbc76731dc0133f.jpg",
-          "reach": 107399,
-          "daysRunning": 124,
+          "reach": 107832,
+          "daysRunning": 125,
           "dateCreated": "2026-05-20",
           "rank": 2
         },
@@ -140,7 +140,7 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/7d38abbbe998ddbb3f62423d4468dee158af0bba14ef8cfe5d31ef392e6c39c4.jpg",
           "thumbnailUrl": "",
           "reach": 93337,
-          "daysRunning": 113,
+          "daysRunning": 114,
           "dateCreated": "2026-05-31",
           "rank": 26
         },
@@ -166,7 +166,7 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/385c5e2ca24bf93c2f5ff3b01e3a5b2356454a03f3b985f5b4057a6c7686e27f.png",
           "thumbnailUrl": "",
           "reach": 83619,
-          "daysRunning": 113,
+          "daysRunning": 114,
           "dateCreated": "2026-05-31",
           "rank": 24
         },
@@ -192,7 +192,7 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/58d7aca0b674d2b283f5a3f57be30fb49dae37d622b187adcd92ee542212d127.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/2808ffd062b16e24044abe73a88f175dc8d98a552e7696ae21ca559aff8b81c1.jpg",
           "reach": 63314,
-          "daysRunning": 142,
+          "daysRunning": 143,
           "dateCreated": "2026-05-02",
           "rank": 27
         },
@@ -218,7 +218,7 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/88dd3185c0c072a29435e1dd6927bd943fe187f863f38ccd3e56a0864a80702b.jpg",
           "thumbnailUrl": "",
           "reach": 59519,
-          "daysRunning": 154,
+          "daysRunning": 155,
           "dateCreated": "2026-04-20",
           "rank": 1
         },
@@ -244,9 +244,9 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/96f248ceaadffb157e62a93075d7ce6cd49f3accce1aa9cffb49fc13e9fcf681.png",
           "thumbnailUrl": "",
           "reach": 49145,
-          "daysRunning": 154,
+          "daysRunning": 155,
           "dateCreated": "2026-04-20",
-          "rank": 46
+          "rank": 45
         },
         {
           "competitor": "Naturva Health",
@@ -296,9 +296,9 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/5c300bc354c095f66a40ba43d2c098dadca0da71645cf351be33e2bbd4a9b385.jpg",
           "thumbnailUrl": "",
           "reach": 39453,
-          "daysRunning": 135,
+          "daysRunning": 136,
           "dateCreated": "2026-05-09",
-          "rank": 47
+          "rank": 46
         },
         {
           "competitor": "Naturva Health",
@@ -322,7 +322,7 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/8c3e2b9853ac4875f3ac88e4338b9d85bad67b54a09efeafb6e4641a1bfbba20.png",
           "thumbnailUrl": "",
           "reach": 38864,
-          "daysRunning": 147,
+          "daysRunning": 148,
           "dateCreated": "2026-04-27",
           "rank": 41
         },
@@ -347,10 +347,10 @@
           "mediaType": "image",
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/ca8be6ce272fa6d866dd462b888c448dac6f4de7fc9cdb461b9d6906da5d9882.png",
           "thumbnailUrl": "",
-          "reach": 36795,
-          "daysRunning": 42,
+          "reach": 37922,
+          "daysRunning": 43,
           "dateCreated": "2026-08-10",
-          "rank": 37
+          "rank": 36
         },
         {
           "competitor": "Naturva Health",
@@ -530,9 +530,9 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/b938feb1a7ac687a0fe83955069ff83128fc2c3cbcb8c4ef6e9030ebcb402850.png",
           "thumbnailUrl": "",
           "reach": 23772,
-          "daysRunning": 53,
+          "daysRunning": 54,
           "dateCreated": "2026-07-30",
-          "rank": 73
+          "rank": 74
         },
         {
           "competitor": "Naturva Health",
@@ -608,9 +608,9 @@
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/4faae05925cdc11a2510da35fe1ae8cee3cd3b11ba8348de8bfaf4460c19b9f4.png",
           "thumbnailUrl": "",
           "reach": 18572,
-          "daysRunning": 70,
+          "daysRunning": 71,
           "dateCreated": "2026-07-13",
-          "rank": 71
+          "rank": 72
         },
         {
           "competitor": "Naturva Health",
@@ -659,8 +659,8 @@
           "mediaType": "video",
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/64ae9d4038fa0931be11418bf9e2713df78adc197d34c9905243b3a623754082.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/7ea04f347ebf3a1b68947409b7306f8d4c49c244d236203ead3ad4af94a8ca51.jpg",
-          "reach": 15289,
-          "daysRunning": 70,
+          "reach": 15353,
+          "daysRunning": 71,
           "dateCreated": "2026-07-13",
           "rank": 10
         },
@@ -685,8 +685,8 @@
           "mediaType": "video",
           "mediaUrl": "https://medias.trendtrack.io/facebook/video/6a659403bcaa62e4b4ca73d81b7c7972446627ac65423ba5847bd05742c62187.mp4",
           "thumbnailUrl": "https://medias.trendtrack.io/facebook/thumbnails/65079f435cbee1e971473dfff578fc151f925fbe428200c22f66d9ab3601a642.jpg",
-          "reach": 15211,
-          "daysRunning": 70,
+          "reach": 15250,
+          "daysRunning": 71,
           "dateCreated": "2026-07-13",
           "rank": 2
         },
@@ -711,10 +711,10 @@
           "mediaType": "image",
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/b938feb1a7ac687a0fe83955069ff83128fc2c3cbcb8c4ef6e9030ebcb402850.png",
           "thumbnailUrl": "",
-          "reach": 15073,
-          "daysRunning": 53,
+          "reach": 15227,
+          "daysRunning": 54,
           "dateCreated": "2026-07-30",
-          "rank": 75
+          "rank": 73
         },
         {
           "competitor": "Naturva Health",
@@ -737,10 +737,10 @@
           "mediaType": "image",
           "mediaUrl": "https://medias.trendtrack.io/facebook/image/5d9b99a3a4c23eaa2b9e41d0a08ae1e8a23ec3795073ae9348ae99c24ceceb76.png",
           "thumbnailUrl": "",
-          "reach": 13540,
-          "daysRunning": 53,
+          "reach": 13568,
+          "daysRunning": 54,
           "dateCreated": "2026-07-30",
-          "rank": 77
+          "rank": 75
         },
         {
           "competitor": "Naturva Health",
