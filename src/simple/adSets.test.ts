@@ -5,18 +5,10 @@ interface FakeAd {
   id: string;
   mediaType: string;
   platform?: string;
-  angle?: string;
-  offer?: string;
 }
 
-function ad(id: string, mediaType: string, platform?: string, angle?: string, offer?: string): FakeAd {
-  return {
-    id,
-    mediaType,
-    ...(platform ? { platform } : {}),
-    ...(angle ? { angle } : {}),
-    ...(offer ? { offer } : {}),
-  };
+function ad(id: string, mediaType: string, platform?: string): FakeAd {
+  return { id, mediaType, ...(platform ? { platform } : {}) };
 }
 
 describe("clubIntoAdSets", () => {
@@ -84,59 +76,12 @@ describe("clubIntoAdSets", () => {
   it("labels platform-tagged sets with the platform name, Meta before TikTok", () => {
     const ads = [ad("t1", "video", "TikTok"), ad("m1", "video", "Meta")];
     const groups = clubIntoAdSets(ads);
-    expect(groups.map((g) => g.label)).toEqual(["Ad Set 1 (Meta / Video)", "Ad Set 2 (TikTok / Video)"]);
+    expect(groups.map((g) => g.label)).toEqual(["Ad Set 1 (Meta Video)", "Ad Set 2 (TikTok Video)"]);
   });
 
   it("keeps the untagged label format when no ad carries a platform", () => {
     const ads = [ad("v1", "video"), ad("s1", "image")];
     const groups = clubIntoAdSets(ads);
     expect(groups.map((g) => g.label)).toEqual(["Ad Set 1 (Video)", "Ad Set 2 (Static)"]);
-  });
-
-  it("never mixes angles within one set, even when everything else matches", () => {
-    const ads = [
-      ad("a1", "video", "Meta", "Erectile Dysfunction"),
-      ad("a2", "video", "Meta", "Nerve Pain"),
-      ad("a3", "video", "Meta", "Erectile Dysfunction"),
-    ];
-    const groups = clubIntoAdSets(ads);
-    for (const group of groups) {
-      const angles = new Set(group.ads.map((a) => a.angle));
-      expect(angles.size).toBe(1);
-    }
-    expect(groups.map((g) => g.label).sort()).toEqual([
-      "Ad Set 1 (Meta / Erectile Dysfunction / Video)",
-      "Ad Set 2 (Meta / Nerve Pain / Video)",
-    ]);
-  });
-
-  it("never mixes offers within one angle+platform+format group", () => {
-    const ads = [
-      ad("o1", "video", "Meta", "Erectile Dysfunction", "BOGO"),
-      ad("o2", "video", "Meta", "Erectile Dysfunction", "Percent Off"),
-    ];
-    const groups = clubIntoAdSets(ads);
-    expect(groups.map((g) => g.label).sort()).toEqual([
-      "Ad Set 1 (Meta / Erectile Dysfunction / BOGO / Video)",
-      "Ad Set 2 (Meta / Erectile Dysfunction / Percent Off / Video)",
-    ]);
-  });
-
-  it("omits angle and offer from the label entirely when neither is configured", () => {
-    const ads = [ad("v1", "video", "Meta"), ad("v2", "video", "Meta")];
-    const groups = clubIntoAdSets(ads);
-    expect(groups.map((g) => g.label)).toEqual(["Ad Set 1 (Meta / Video)"]);
-  });
-
-  it("sorts Uncategorized after named angles", () => {
-    const ads = [
-      ad("u1", "video", "Meta", "Uncategorized"),
-      ad("a1", "video", "Meta", "Erectile Dysfunction"),
-    ];
-    const groups = clubIntoAdSets(ads);
-    expect(groups.map((g) => g.label)).toEqual([
-      "Ad Set 1 (Meta / Erectile Dysfunction / Video)",
-      "Ad Set 2 (Meta / Uncategorized / Video)",
-    ]);
   });
 });

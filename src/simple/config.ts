@@ -14,12 +14,6 @@ const myLandingPageSchema = z.object({
   brandName: z.string().min(1).optional(),
 });
 
-/** A keyword-defined category for angle/offer classification (see textClassifier.ts). */
-const classificationRuleSchema = z.object({
-  name: z.string().min(1),
-  keywords: z.array(z.string().min(1)).min(1),
-});
-
 const configSchema = z.object({
   /** Your own brand - used to swap the competitor's brand name into yours in ad copy. Omit to skip that swap. */
   myBrand: z.object({ name: z.string().min(1) }).optional(),
@@ -31,16 +25,6 @@ const configSchema = z.object({
    * list per competitor.
    */
   myLandingPages: z.array(myLandingPageSchema).optional().default([]),
-  /**
-   * Optional keyword-based angle categories (e.g. "Erectile Dysfunction",
-   * "Nerve Pain") used to split ad sets by which pain point/topic an ad's
-   * copy is built around, on top of platform and media format. Fully
-   * opt-in - omit this and every ad classifies as "" (no change to ad-set
-   * labels or the sheet). See textClassifier.ts for the matching rules.
-   */
-  angles: z.array(classificationRuleSchema).optional().default([]),
-  /** Same mechanism as `angles`, for offer/promo type (e.g. "Percent Off", "BOGO", "Free Trial"). */
-  offers: z.array(classificationRuleSchema).optional().default([]),
   competitors: z
     .array(
       z.object({
@@ -55,13 +39,10 @@ const configSchema = z.object({
 
 export type SimpleCompetitor = z.infer<typeof configSchema>["competitors"][number];
 export type MyLandingPage = z.infer<typeof myLandingPageSchema>;
-export type ClassificationRuleConfig = z.infer<typeof classificationRuleSchema>;
 
 export interface SimpleConfig {
   myBrand?: { name: string };
   myLandingPages: MyLandingPage[];
-  angles: ClassificationRuleConfig[];
-  offers: ClassificationRuleConfig[];
   competitors: SimpleCompetitor[];
 }
 
@@ -80,11 +61,5 @@ export async function loadSimpleConfig(): Promise<SimpleConfig> {
       `competitors.simple.json is invalid: ${JSON.stringify(parsed.error.flatten().fieldErrors)}`,
     );
   }
-  return {
-    myBrand: parsed.data.myBrand,
-    myLandingPages: parsed.data.myLandingPages,
-    angles: parsed.data.angles,
-    offers: parsed.data.offers,
-    competitors: parsed.data.competitors,
-  };
+  return { myBrand: parsed.data.myBrand, myLandingPages: parsed.data.myLandingPages, competitors: parsed.data.competitors };
 }

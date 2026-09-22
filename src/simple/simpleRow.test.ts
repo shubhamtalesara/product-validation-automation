@@ -8,8 +8,6 @@ function baseRow(overrides: Partial<SimpleAdRow> = {}): SimpleAdRow {
     platform: "Meta",
     pageName: "Acme Official",
     adSet: "Ad Set 1 (Video)",
-    angle: "",
-    offer: "",
     trendtrackAdId: "ad-1",
     trendtrackPreviewUrl: "https://app.trendtrack.io/share/ad-1",
     headline: "Stop wasting money",

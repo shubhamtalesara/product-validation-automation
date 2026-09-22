@@ -8,8 +8,7 @@ import { TrendtrackClient } from "../trendtrack/client.js";
 import type { TiktokLibraryItem, TrendtrackAdSummary } from "../trendtrack/types.js";
 import { dedupeCreatives, type DedupCandidate, type DedupGroup } from "../research/dedupe.js";
 import { SheetsClient, type SheetsCredentials } from "../sheets/sheetsClient.js";
-import { loadSimpleConfig, type ClassificationRuleConfig, type MyLandingPage, type SimpleCompetitor } from "./config.js";
-import { classifyText } from "./textClassifier.js";
+import { loadSimpleConfig, type MyLandingPage, type SimpleCompetitor } from "./config.js";
 import { resolveCompetitorSources } from "./resolveAdvertisers.js";
 import { classifyLandingPage } from "./landingPageType.js";
 import { deriveHeadline } from "./headline.js";
@@ -425,8 +424,6 @@ async function enrichAd(
   group: DedupGroup<CompetitorCandidate>,
   defaultBrandName: string | undefined,
   myLandingPages: MyLandingPage[],
-  angles: ClassificationRuleConfig[],
-  offers: ClassificationRuleConfig[],
 ): Promise<SimpleAdRow | null> {
   const candidate = group.representative;
   const adId = candidate.id;
@@ -468,20 +465,12 @@ async function enrichAd(
       myLandingPageUrl: myMatch?.url,
     });
 
-    // Angle looks at the landing page too (the destination page's own slug
-    // often names the pain point, e.g. "/pages/nerve-pain-relief"); offer
-    // rarely shows up in a URL, so it's classified from copy alone.
-    const angle = classifyText(`${enriched.headline} ${enriched.body} ${enriched.landingPageUrl}`, angles);
-    const offer = classifyText(`${enriched.headline} ${enriched.body}`, offers);
-
     return {
       competitor: competitor.name,
       competitorLandingPage: competitor.landingPage,
       platform: candidate.platform,
       pageName: enriched.pageName,
       adSet: "",
-      angle,
-      offer,
       trendtrackAdId: adId,
       trendtrackPreviewUrl: enriched.trendtrackPreviewUrl,
       headline: enriched.headline,
@@ -579,7 +568,7 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
  */
 export async function runSimpleSync(): Promise<CompetitorResult[]> {
   logger.info("Starting simple competitor ad sync", { fetchTiktok: env.SIMPLE_FETCH_TIKTOK });
-  const { myBrand, myLandingPages, angles, offers, competitors } = await loadSimpleConfig();
+  const { myBrand, myLandingPages, competitors } = await loadSimpleConfig();
   const trendtrack = new TrendtrackClient({
     apiKey: env.TRENDTRACK_API_KEY,
     baseUrl: env.TRENDTRACK_BASE_URL,
@@ -657,7 +646,7 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
   );
 
   for (const { gathering, group } of selected) {
-    const ad = await enrichAd(trendtrack, gathering.competitor, group, myBrand?.name, myLandingPages, angles, offers);
+    const ad = await enrichAd(trendtrack, gathering.competitor, group, myBrand?.name, myLandingPages);
     if (ad) resultsByCompetitor.get(gathering.competitor.name)!.ads.push(ad);
   }
 

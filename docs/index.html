@@ -128,8 +128,6 @@ function renderCard(ad) {
       <div class="media">${mediaHtml}</div>
       <div class="card-body">
         ${ad.platform ? `<span class="rank-badge">${ad.platform === "TikTok" ? "🎵" : "📘"} ${escapeHtml(ad.platform)}</span>` : ""}
-        ${ad.angle ? `<span class="rank-badge">🎯 ${escapeHtml(ad.angle)}</span>` : ""}
-        ${ad.offer ? `<span class="rank-badge">🏷 ${escapeHtml(ad.offer)}</span>` : ""}
         ${ad.rank ? `<span class="rank-badge">Rank #${escapeHtml(ad.rank)}</span>` : ""}
         <div class="headline">${escapeHtml(ad.headline || "(no headline)")}</div>
         <div class="copy">${escapeHtml(ad.primaryText || "")}</div>
