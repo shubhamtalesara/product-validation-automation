@@ -8,7 +8,7 @@ const valuesMock = {
 };
 
 const spreadsheetsMock = {
-  get: vi.fn().mockResolvedValue({ data: { sheets: [{ properties: { title: "Competitor Ads" } }] } }),
+  get: vi.fn().mockResolvedValue({ data: { sheets: [{ properties: { title: "Competitor Ads", sheetId: 42 } }] } }),
   batchUpdate: vi.fn().mockResolvedValue({ data: {} }),
   values: valuesMock,
 };
@@ -39,7 +39,7 @@ function newClient(sheetTab: string) {
 beforeEach(() => {
   vi.clearAllMocks();
   spreadsheetsMock.get.mockResolvedValue({
-    data: { sheets: [{ properties: { title: "Competitor Ads" } }] },
+    data: { sheets: [{ properties: { title: "Competitor Ads", sheetId: 42 } }] },
   });
   valuesMock.get.mockResolvedValue({ data: { values: [] } });
   valuesMock.append.mockResolvedValue({
@@ -126,6 +126,35 @@ describe("SheetsClient cell-size guard", () => {
 
     const sentValues = valuesMock.update.mock.calls[0][0].requestBody.values;
     expect(sentValues).toEqual([["Competitor", "Reach"], ["Acme", 12345]]);
+  });
+});
+
+describe("SheetsClient number-format reset", () => {
+  it("resets number formatting on the written columns before writing, so stale date formatting from an earlier schema can't corrupt plain numbers", async () => {
+    const client = newClient("Competitor Ads");
+    await client.replaceAll([["Competitor", "Reach"], ["Acme", 12345]]);
+
+    expect(spreadsheetsMock.batchUpdate).toHaveBeenCalledWith(
+      expect.objectContaining({
+        requestBody: {
+          requests: [
+            {
+              repeatCell: {
+                range: { sheetId: 42, startColumnIndex: 0, endColumnIndex: 2 },
+                cell: { userEnteredFormat: {} },
+                fields: "userEnteredFormat.numberFormat",
+              },
+            },
+          ],
+        },
+      }),
+    );
+  });
+
+  it("skips the format-reset call when there are no rows to write", async () => {
+    const client = newClient("Competitor Ads");
+    await client.replaceAll([]);
+    expect(spreadsheetsMock.batchUpdate).not.toHaveBeenCalled();
   });
 });
 

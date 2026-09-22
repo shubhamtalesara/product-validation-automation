@@ -117,6 +117,7 @@ export class SheetsClient {
   }
 
   private ensuredTab: Promise<void> | null = null;
+  private cachedSheetId: number | undefined;
 
   /**
    * A range referencing a tab that doesn't exist yet fails with
@@ -129,16 +130,19 @@ export class SheetsClient {
       this.ensuredTab = (async () => {
         const meta = await this.sheets.spreadsheets.get({
           spreadsheetId: this.spreadsheetId,
-          fields: "sheets.properties.title",
+          fields: "sheets.properties",
         });
-        const titles = (meta.data.sheets ?? []).map((s) => s.properties?.title);
-        if (!titles.includes(this.sheetTab)) {
-          await this.sheets.spreadsheets.batchUpdate({
-            spreadsheetId: this.spreadsheetId,
-            requestBody: { requests: [{ addSheet: { properties: { title: this.sheetTab } } }] },
-          });
-          logger.info(`Created missing sheet tab "${this.sheetTab}"`);
+        const existing = (meta.data.sheets ?? []).find((s) => s.properties?.title === this.sheetTab);
+        if (existing) {
+          this.cachedSheetId = existing.properties?.sheetId ?? undefined;
+          return;
         }
+        const created = await this.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          requestBody: { requests: [{ addSheet: { properties: { title: this.sheetTab } } }] },
+        });
+        this.cachedSheetId = created.data.replies?.[0]?.addSheet?.properties?.sheetId ?? undefined;
+        logger.info(`Created missing sheet tab "${this.sheetTab}"`);
       })().catch((err) => {
         this.ensuredTab = null; // let a later call retry instead of caching a failure forever
         throw err;
@@ -192,7 +196,19 @@ export class SheetsClient {
     return match ? Number(match[1]) : -1;
   }
 
-  /** Replaces the entire tab's contents (header + all rows) in one call. */
+  /**
+   * Replaces the entire tab's contents (header + all rows) in one call.
+   *
+   * `values.clear()` only clears cell VALUES, not per-cell number/date
+   * formatting - a column that at some point held a real date (e.g. an
+   * earlier schema version had "Date Created" at this same column index,
+   * before later columns were inserted/removed and shifted everything)
+   * keeps that formatting forever, even after being repurposed to hold
+   * plain numbers. Sheets then renders the new numeric values through the
+   * stale date format (a reach count like 107832 shows up as a garbled
+   * date). Resetting numberFormat on the full written range before writing
+   * fixes this at the source and can't regress even if columns shift again.
+   */
   async replaceAll(rows: (string | number)[][]): Promise<void> {
     await this.ensureTabExists();
     await this.wrapErrors(
@@ -202,6 +218,26 @@ export class SheetsClient {
       }),
       "clear",
     );
+    const columnCount = rows[0]?.length ?? 0;
+    if (this.cachedSheetId !== undefined && columnCount > 0) {
+      await this.wrapErrors(
+        this.sheets.spreadsheets.batchUpdate({
+          spreadsheetId: this.spreadsheetId,
+          requestBody: {
+            requests: [
+              {
+                repeatCell: {
+                  range: { sheetId: this.cachedSheetId, startColumnIndex: 0, endColumnIndex: columnCount },
+                  cell: { userEnteredFormat: {} },
+                  fields: "userEnteredFormat.numberFormat",
+                },
+              },
+            ],
+          },
+        }),
+        "resetColumnFormatting",
+      );
+    }
     await this.wrapErrors(
       this.sheets.spreadsheets.values.update({
         spreadsheetId: this.spreadsheetId,
