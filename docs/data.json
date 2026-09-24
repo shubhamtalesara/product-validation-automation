@@ -1,17 +1,17 @@
 {
-  "generatedAt": "2026-09-24T01:39:32.941Z",
+  "generatedAt": "2026-09-24T10:39:13.333Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
       "name": "Pawira",
       "landingPage": "https://pawira.com",
-      "error": "Could not find TrendTrack Meta ads for [\"pawira.com\"] (from https://pawira.com). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 402 for GET /v1/advertisers/pawira.com/ads: {\"error\":{\"code\":\"insufficient_credits\",\"message\":\"This workspace does not have enough credits to fulfill this request.\",\"requestId\":\"3093d8e2-9e52-4b0e-955a-75fb92cf991f\",\"details\":{\"creditsRequired\":150,\"creditsAvailable\":0}}})",
+      "error": "Could not find TrendTrack Meta ads for [\"pawira.com\"] (from https://pawira.com). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 402 for GET /v1/advertisers/pawira.com/ads: {\"error\":{\"code\":\"insufficient_credits\",\"message\":\"This workspace does not have enough credits to fulfill this request.\",\"requestId\":\"0a030fd9-ced4-46c1-9a8d-b345d47873af\",\"details\":{\"creditsRequired\":150,\"creditsAvailable\":0}}})",
       "ads": []
     },
     {
       "name": "Kitty Supps",
       "landingPage": "https://kittysupps.com/",
-      "error": "Could not find TrendTrack Meta ads for [\"kittysupps.com\"] (from https://kittysupps.com/). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 402 for GET /v1/advertisers/kittysupps.com/ads: {\"error\":{\"code\":\"insufficient_credits\",\"message\":\"This workspace does not have enough credits to fulfill this request.\",\"requestId\":\"be7bda2f-41a6-4240-b59e-adde809964ef\",\"details\":{\"creditsRequired\":150,\"creditsAvailable\":0}}})",
+      "error": "Could not find TrendTrack Meta ads for [\"kittysupps.com\"] (from https://kittysupps.com/). If these aren't the right TrendTrack advertiser IDs, look them up in TrendTrack's dashboard and add \"advertiserId\" for this competitor in competitors.simple.json. (HTTP 402 for GET /v1/advertisers/kittysupps.com/ads: {\"error\":{\"code\":\"insufficient_credits\",\"message\":\"This workspace does not have enough credits to fulfill this request.\",\"requestId\":\"ca45b921-b0fb-4808-9674-9b8fab0e27ce\",\"details\":{\"creditsRequired\":150,\"creditsAvailable\":0}}})",
       "ads": []
     }
   ]
