@@ -29,7 +29,7 @@ const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
 const MIN_CREATED_DATE = "2026-01-01";
 
 /** Hard floor: an ad below this reach/views never enters the candidate pool, regardless of how long it's been running. */
-const MIN_REACH = 5000;
+const MIN_REACH = 1000;
 
 /**
  * Final selection is two disjoint buckets: env.SIMPLE_HIGH_REACH_AD_COUNT
@@ -436,10 +436,11 @@ async function enrichAd(
     if (!enriched) return null;
 
     // Defense-in-depth: the list-summary reach used to filter candidates
-    // can disagree sharply with the detail response's reach (confirmed in
-    // production - a summary reach of 5000+ landing on a detail reach as
-    // low as 23) - re-check the floor against the value that actually ends
-    // up in the sheet, not just the one used to gather candidates.
+    // can disagree sharply with the detail response's reach, especially for
+    // very recently first-seen ads - TrendTrack's own detail response has
+    // flagged cases of this as isLowReach even though the list summary
+    // reported 5000+. Re-check the floor against the value that actually
+    // ends up in the sheet, not just the one used to gather candidates.
     if ((enriched.reach ?? 0) < MIN_REACH) {
       logger.info(
         `Skipping ad ${adId} for ${competitor.name} - reach on the detail response (${enriched.reach ?? 0}) is below the ${MIN_REACH} floor even though the list summary passed it`,

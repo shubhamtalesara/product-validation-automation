@@ -196,7 +196,7 @@ Each row is one winning ad, with:
   Three hard rules decide which ads ever make it into the sheet, with no
   exceptions or fallback for any of them: any Meta page-engagement/"Like
   Page"/"Visit Profile" ad with no real landing page is always excluded;
-  every ad must have **at least 5,000 impressions/views**; and every ad
+  every ad must have **at least 1,000 impressions/views**; and every ad
   must have started running in **2026 or later**.
 
   On top of that, the final selection is two separate buckets - see "How
