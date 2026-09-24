@@ -1,24 +1,25 @@
 {
   "myLandingPages": [
     {
-      "url": "https://offers.trywellvi.com/pages/lung-spray",
-      "type": "PDP",
+      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies-listicle",
+      "type": "listicle",
       "brandName": "Wellvi"
     },
     {
-      "url": "https://offers.trywellvi.com/pages/lung-spray-listicle-v4",
-      "type": "listicle",
+      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies-advertorial",
+      "type": "advertorial",
+      "brandName": "Wellvi"
+    },
+    {
+      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies",
+      "type": "PDP",
       "brandName": "Wellvi"
     }
   ],
   "competitors": [
     {
-      "name": "VelvaFlow",
-      "landingPage": "https://velvaflow.com/products/lung-cleansing-spray"
-    },
-    {
-      "name": "Naturva Health",
-      "landingPage": "https://naturvahealth.com/"
+      "name": "North Hollow",
+      "landingPage": "https://north-hollow.com"
     }
   ]
 }
