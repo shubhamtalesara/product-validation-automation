@@ -29,7 +29,7 @@ const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
 const MIN_CREATED_DATE = "2026-01-01";
 
 /** Hard floor: an ad below this reach/views never enters the candidate pool, regardless of how long it's been running. */
-const MIN_REACH = 6000;
+const MIN_REACH = 500;
 
 /**
  * Final selection is two disjoint buckets: env.SIMPLE_HIGH_REACH_AD_COUNT
