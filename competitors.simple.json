@@ -1,19 +1,25 @@
 {
   "myLandingPages": [
     {
-      "url": "https://offers.trywellvi.com/pages/2-2l-fountain",
+      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies-listicle",
+      "type": "listicle",
+      "brandName": "Wellvi"
+    },
+    {
+      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies-advertorial",
+      "type": "advertorial",
+      "brandName": "Wellvi"
+    },
+    {
+      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies",
       "type": "PDP",
       "brandName": "Wellvi"
     }
   ],
   "competitors": [
     {
-      "name": "Pawira",
-      "landingPage": "https://pawira.com"
-    },
-    {
-      "name": "Kitty Supps",
-      "landingPage": "https://kittysupps.com/"
+      "name": "North Hollow",
+      "landingPage": "https://north-hollow.com"
     }
   ]
 }
