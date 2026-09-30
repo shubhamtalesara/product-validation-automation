@@ -1,25 +1,19 @@
 {
   "myLandingPages": [
     {
-      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies-listicle",
-      "type": "listicle",
-      "brandName": "Wellvi"
-    },
-    {
-      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies-advertorial",
-      "type": "advertorial",
-      "brandName": "Wellvi"
-    },
-    {
-      "url": "https://offers.trywellvi.com/pages/magnesium-bisglycinate-gummies",
+      "url": "https://get.myhematos.com",
       "type": "PDP",
-      "brandName": "Wellvi"
+      "brandName": "My Hematos"
     }
   ],
   "competitors": [
     {
-      "name": "North Hollow",
-      "landingPage": "https://north-hollow.com"
+      "name": "My Hematix",
+      "landingPage": "https://myhematix.com"
+    },
+    {
+      "name": "My Hemios",
+      "landingPage": "https://myhemios.com"
     }
   ]
 }
