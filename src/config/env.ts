@@ -53,8 +53,8 @@ const envSchema = z.object({
   // SIMPLE_RECENT_AD_COUNT more picked purely by reach from whatever
   // started running on/after the recency cutoff (a global top-N, not
   // per-competitor). Total ad count is the sum of the two.
-  SIMPLE_HIGH_REACH_AD_COUNT: numberFromString(18),
-  SIMPLE_RECENT_AD_COUNT: numberFromString(12),
+  SIMPLE_HIGH_REACH_AD_COUNT: numberFromString(90),
+  SIMPLE_RECENT_AD_COUNT: numberFromString(30),
   // TrendTrack's Meta and TikTok ad libraries are separate namespaces (see
   // src/trendtrack/types.ts) - fetch both by default; set to "false" to
   // fall back to Meta-only if TikTok data turns out to be unwanted/noisy.

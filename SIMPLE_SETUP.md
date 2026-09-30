@@ -7,14 +7,14 @@ clicking buttons in websites you already use (Google, GitHub) — no
 terminal, no code.
 
 You list as many competitors as you want (2, 10, 30 - no limit). The
-system fills two buckets: `SIMPLE_HIGH_REACH_AD_COUNT` slots (default 18)
+system fills two buckets: `SIMPLE_HIGH_REACH_AD_COUNT` slots (default 90)
 picked purely by impressions, split across your competitors in proportion
 to how many live ads each one is running - a competitor running far more
 ads than the others earns more of the slots, but every competitor with at
 least one eligible ad is guaranteed at least one slot - plus
-`SIMPLE_RECENT_AD_COUNT` more slots (default 12) picked purely by
+`SIMPLE_RECENT_AD_COUNT` more slots (default 30) picked purely by
 impressions from ads created since June 2026, with no competitor
-weighting (see "How the final 30 are chosen" below).
+weighting (see "How the final 120 are chosen" below).
 
 Total time: about 10 minutes, once.
 
@@ -139,8 +139,8 @@ sidebar) → **Run workflow** button → **Run workflow**. Wait about a minute,
 then:
 
 - Refresh your **Google Sheet** — a new tab called "Competitor Ads" will
-  have the best ads across all of your competitors (18 by pure impressions
-  plus 12 created since June 2026, or however many you've set).
+  have the best ads across all of your competitors (90 by pure impressions
+  plus 30 created since June 2026, or however many you've set).
 - Refresh your **dashboard URL** from step 5 — you'll see the same ads as
   visual cards (thumbnail, headline, copy, impressions, days running, link
   to their landing page).
@@ -196,7 +196,7 @@ Each row is one winning ad, with:
   Three hard rules decide which ads ever make it into the sheet, with no
   exceptions or fallback for any of them: any Meta page-engagement/"Like
   Page"/"Visit Profile" ad with no real landing page is always excluded;
-  every ad must have **at least 500 impressions/views**; and every ad
+  every ad must have **at least 6,000 impressions/views**; and every ad
   must have started running in **2026 or later**.
 
   On top of that, the final selection is two separate buckets - see "How
@@ -256,7 +256,7 @@ tell which platform an ad came from. If you only want Meta ads, set
 The sheet is filled by two separate, non-overlapping buckets rather than
 one global "best N by impressions" list:
 
-**Bucket 1 - `SIMPLE_HIGH_REACH_AD_COUNT` ads (default 18), any date.**
+**Bucket 1 - `SIMPLE_HIGH_REACH_AD_COUNT` ads (default 90), any date.**
 Instead of a single global ranking (which would let one high-reach
 competitor crowd everyone else out), each competitor's share of these
 slots is set by their own total live-ad count relative to everyone
@@ -268,7 +268,7 @@ is a fixed arithmetic rule (largest-remainder apportionment, the same
 method used to divide parliamentary seats by population) — not an AI
 judgment call, and it never produces an even split either.
 
-**Bucket 2 - `SIMPLE_RECENT_AD_COUNT` ads (default 12), created since June
+**Bucket 2 - `SIMPLE_RECENT_AD_COUNT` ads (default 30), created since June
 2026.** From whatever's left after Bucket 1 (no double-counting), this
 takes the single best-reach ads that started running on or after June
 2026 — no competitor weighting, purely the top performers by impressions.
