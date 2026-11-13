@@ -47,14 +47,11 @@ const envSchema = z.object({
   GOOGLE_SHEET_ID: z.string().optional().default(""),
   GOOGLE_SHEET_TAB: z.string().optional().default("Research"),
   SIMPLE_SHEET_TAB: z.string().optional().default("Competitor Ads"),
-  // Final selection is two disjoint buckets across ALL configured
-  // competitors combined: SIMPLE_HIGH_REACH_AD_COUNT picked purely by
-  // reach (split proportionally across competitors by weight), plus
-  // SIMPLE_RECENT_AD_COUNT more picked purely by reach from whatever
-  // started running on/after the recency cutoff (a global top-N, not
-  // per-competitor). Total ad count is the sum of the two.
-  SIMPLE_HIGH_REACH_AD_COUNT: numberFromString(90),
-  SIMPLE_RECENT_AD_COUNT: numberFromString(30),
+  // Final selection: the SIMPLE_TOTAL_AD_COUNT ads (across ALL configured
+  // competitors combined) that have been running the longest - a flat
+  // global ranking by days running, no reach requirement and no
+  // per-competitor weighting.
+  SIMPLE_TOTAL_AD_COUNT: numberFromString(20),
   // TrendTrack's Meta and TikTok ad libraries are separate namespaces (see
   // src/trendtrack/types.ts) - fetch both by default; set to "false" to
   // fall back to Meta-only if TikTok data turns out to be unwanted/noisy.

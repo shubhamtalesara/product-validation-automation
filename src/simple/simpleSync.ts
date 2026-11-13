@@ -16,7 +16,6 @@ import { isJunkAd } from "./junkAds.js";
 import { clubIntoAdSets } from "./adSets.js";
 import { matchLandingPage } from "./matchLandingPage.js";
 import { localizePrimaryText } from "./localize.js";
-import { allocateAdSlots } from "./allocateSlots.js";
 import { resolveCreatedDate, isOnOrAfter } from "./createdDate.js";
 import { extractDomain } from "./domain.js";
 import { SIMPLE_SHEET_COLUMNS, simpleRowToSheetValues, type SimpleAdRow } from "./simpleRow.js";
@@ -27,19 +26,6 @@ const DATA_JSON_PATH = resolve(projectRoot, "docs/data.json");
 
 /** Hard floor: an ad must have actually started running in 2026 or later to ever be considered - older creative is excluded outright, no fallback. */
 const MIN_CREATED_DATE = "2026-01-01";
-
-/** Hard floor: an ad below this reach/views never enters the candidate pool, regardless of how long it's been running. */
-const MIN_REACH = 2000;
-
-/**
- * Final selection is two disjoint buckets: env.SIMPLE_HIGH_REACH_AD_COUNT
- * ads picked purely by reach (any 2026+ date), split proportionally across
- * competitors by weight; then env.SIMPLE_RECENT_AD_COUNT more picked purely
- * by reach among the *remaining* (not already selected) ads that started
- * running on/after RECENT_BUCKET_CUTOFF, with no per-competitor weighting -
- * a global top-N. See the bucket construction in runSimpleSync.
- */
-const RECENT_BUCKET_CUTOFF = "2026-06-01";
 
 function metaReach(summary: TrendtrackAdSummary): number | null {
   return summary.metrics?.reach ?? null;
@@ -74,7 +60,7 @@ interface CandidateGathering {
   competitor: SimpleCompetitor;
   advertiserIds: string[];
   groups: DedupGroup<CompetitorCandidate>[];
-  /** Total live-ad count across the competitor's page(s)/shop(s) - how much weight they get in slot allocation. */
+  /** Total live-ad count across the competitor's page(s)/shop(s) - diagnostic only, not used for selection. */
   weight: number;
   error: string | null;
 }
@@ -94,7 +80,7 @@ async function gatherMetaCandidates(
       const summaries: TrendtrackAdSummary[] = [];
       for await (const ad of trendtrack.paginateAdvertiserAds(
         advertiserId,
-        { status: "active", sortBy: "reach", order: "desc" },
+        { status: "active", sortBy: "longestRunning", order: "desc" },
         poolSize,
       )) {
         summaries.push(ad);
@@ -105,20 +91,17 @@ async function gatherMetaCandidates(
 
       const junk = summaries.filter((s) => isJunkAd(s.content));
       const tooOld = summaries.filter((s) => !isOnOrAfter(resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null), MIN_CREATED_DATE));
-      const tooLowReach = summaries.filter((s) => (metaReach(s) ?? 0) < MIN_REACH);
       const eligible = summaries.filter(
         (s) =>
           !isJunkAd(s.content) &&
-          isOnOrAfter(resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null), MIN_CREATED_DATE) &&
-          (metaReach(s) ?? 0) >= MIN_REACH,
+          isOnOrAfter(resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null), MIN_CREATED_DATE),
       );
       logger.info(
-        `Retrieved ${summaries.length} active Meta ads for ${competitor.name} (${eligible.length} eligible: 2026+, ${MIN_REACH}+ reach, not junk)`,
+        `Retrieved ${summaries.length} active Meta ads for ${competitor.name} (${eligible.length} eligible: 2026+, not junk)`,
         {
           advertiserId,
           excludedJunk: junk.length,
           excludedBefore2026: tooOld.length,
-          excludedLowReach: tooLowReach.length,
         },
       );
       if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
@@ -134,14 +117,12 @@ async function gatherMetaCandidates(
         if (isJunkAd(s.content)) continue;
         const createdDate = resolveCreatedDate(s.firstSeenAt, s.daysRunning ?? null);
         if (!isOnOrAfter(createdDate, MIN_CREATED_DATE)) continue;
-        const reach = metaReach(s);
-        if ((reach ?? 0) < MIN_REACH) continue;
         candidates.push({
           platform: "Meta",
           id: s.id,
           collationId: s.collationId ?? null,
           advertiserId,
-          reach,
+          reach: metaReach(s),
           daysRunning: s.daysRunning ?? null,
           createdDate,
           ad: s,
@@ -178,7 +159,7 @@ async function gatherTiktokCandidates(
       const items: TiktokLibraryItem[] = [];
       for await (const item of trendtrack.paginateShopTiktokLibrary(
         shopId,
-        { status: "active", type: "ad", sortBy: "views", order: "desc" },
+        { status: "active", type: "ad", sortBy: "daysRunning", order: "desc" },
         poolSize,
       )) {
         items.push(item);
@@ -189,18 +170,14 @@ async function gatherTiktokCandidates(
       liveAdsByPage.set(`tiktok:${shopId}`, items.length);
 
       const tooOld = items.filter((i) => !isOnOrAfter(resolveCreatedDate(i.publishedAt, i.daysRunning ?? null), MIN_CREATED_DATE));
-      const tooLowReach = items.filter((i) => (tiktokReach(i) ?? 0) < MIN_REACH);
-      const eligible = items.filter(
-        (i) =>
-          isOnOrAfter(resolveCreatedDate(i.publishedAt, i.daysRunning ?? null), MIN_CREATED_DATE) &&
-          (tiktokReach(i) ?? 0) >= MIN_REACH,
+      const eligible = items.filter((i) =>
+        isOnOrAfter(resolveCreatedDate(i.publishedAt, i.daysRunning ?? null), MIN_CREATED_DATE),
       );
       logger.info(
-        `Retrieved ${items.length} active TikTok ads for ${competitor.name} (${eligible.length} eligible: 2026+, ${MIN_REACH}+ views)`,
+        `Retrieved ${items.length} active TikTok ads for ${competitor.name} (${eligible.length} eligible: 2026+)`,
         {
           shopId,
           excludedBefore2026: tooOld.length,
-          excludedLowReach: tooLowReach.length,
         },
       );
       if (env.LOG_RAW_TRENDTRACK_RESPONSES) {
@@ -213,14 +190,12 @@ async function gatherTiktokCandidates(
       for (const item of items) {
         const createdDate = resolveCreatedDate(item.publishedAt, item.daysRunning ?? null);
         if (!isOnOrAfter(createdDate, MIN_CREATED_DATE)) continue;
-        const reach = tiktokReach(item);
-        if ((reach ?? 0) < MIN_REACH) continue;
         candidates.push({
           platform: "TikTok",
           id: item.id,
           collationId: null,
           advertiserId: shopId,
-          reach,
+          reach: tiktokReach(item),
           daysRunning: item.daysRunning ?? null,
           createdDate,
           item,
@@ -239,18 +214,17 @@ async function gatherTiktokCandidates(
  * Gathers and dedupes active ads for one competitor from both Meta and
  * TikTok (TikTok fetch skipped entirely when SIMPLE_FETCH_TIKTOK=false), and
  * groups them into creative-concept groups (cheap: list endpoints only, no
- * per-ad detail calls yet). Every candidate must clear three hard floors
- * before it's even considered: not a Meta page-engagement/junk ad, started
- * running in 2026 or later, and at least MIN_REACH reach/views - there is
- * no fallback for any of these, unlike the old 30-day-running preference
- * they replaced. Also computes this competitor's total live-ad count
- * (summed once per distinct page/shop) for weighted slot allocation.
+ * per-ad detail calls yet). Every candidate must clear two hard floors
+ * before it's even considered: not a Meta page-engagement/junk ad, and
+ * started running in 2026 or later - there is no fallback for either, and
+ * no reach/views requirement at all. Also computes this competitor's total
+ * live-ad count (summed once per distinct page/shop), kept for diagnostics.
  */
 async function gatherCandidateGroups(
   trendtrack: TrendtrackClient,
   competitor: SimpleCompetitor,
 ): Promise<CandidateGathering> {
-  const poolSize = Math.max((env.SIMPLE_HIGH_REACH_AD_COUNT + env.SIMPLE_RECENT_AD_COUNT) * 3, 50);
+  const poolSize = Math.max(env.SIMPLE_TOTAL_AD_COUNT * 3, 50);
 
   // One resolution call covers both platforms - Meta's advertiserIds and
   // TikTok's shopIds both come off the same /v1/lookup, so a slow lookup
@@ -435,19 +409,6 @@ async function enrichAd(
         : await enrichTiktokAd(trendtrack, competitor, adId, candidate);
     if (!enriched) return null;
 
-    // Defense-in-depth: the list-summary reach used to filter candidates
-    // can disagree sharply with the detail response's reach, especially for
-    // very recently first-seen ads - TrendTrack's own detail response has
-    // flagged cases of this as isLowReach even though the list summary
-    // reported 5000+. Re-check the floor against the value that actually
-    // ends up in the sheet, not just the one used to gather candidates.
-    if ((enriched.reach ?? 0) < MIN_REACH) {
-      logger.info(
-        `Skipping ad ${adId} for ${competitor.name} - reach on the detail response (${enriched.reach ?? 0}) is below the ${MIN_REACH} floor even though the list summary passed it`,
-      );
-      return null;
-    }
-
     const landingPageType = classifyLandingPage(enriched.landingPageUrl);
     const myMatch = matchLandingPage(landingPageType, myLandingPages);
     let competitorDomain = "";
@@ -525,7 +486,7 @@ async function writeToSheet(results: CompetitorResult[]): Promise<void> {
 
   const rows: (string | number)[][] = [[...SIMPLE_SHEET_COLUMNS]];
   for (const result of results) {
-    for (const ad of result.ads.sort((a, b) => (b.reach ?? 0) - (a.reach ?? 0))) {
+    for (const ad of result.ads.sort((a, b) => (b.daysRunning ?? -1) - (a.daysRunning ?? -1))) {
       rows.push(simpleRowToSheetValues(ad));
     }
   }
@@ -544,7 +505,7 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
       name: r.name,
       landingPage: r.landingPage,
       error: r.error,
-      ads: r.ads.sort((a, b) => (b.reach ?? 0) - (a.reach ?? 0)),
+      ads: r.ads.sort((a, b) => (b.daysRunning ?? -1) - (a.daysRunning ?? -1)),
     })),
   };
   await mkdir(dirname(DATA_JSON_PATH), { recursive: true });
@@ -553,19 +514,11 @@ async function writeDataJson(results: CompetitorResult[]): Promise<void> {
 }
 
 /**
- * Selects (SIMPLE_HIGH_REACH_AD_COUNT + SIMPLE_RECENT_AD_COUNT) ads total
- * as two disjoint buckets:
- *  - SIMPLE_HIGH_REACH_AD_COUNT picked purely by reach, with no preference
- *    for when they were created, split across competitors proportionally
- *    to each one's live-ad count (see allocateAdSlots) rather than a
- *    single global top-N - a competitor running far more ads than the
- *    others earns more slots, but everyone with at least one eligible ad
- *    gets at least one.
- *  - SIMPLE_RECENT_AD_COUNT more, picked purely by reach (no competitor
- *    weighting) from whatever's left that started running on/after
- *    RECENT_BUCKET_CUTOFF - if that pool comes up short, the shortfall is
- *    backfilled with the next-best-reach remaining ads (any date) so the
- *    total still reaches the full count whenever enough inventory exists.
+ * Selects the SIMPLE_TOTAL_AD_COUNT ads (across every competitor combined)
+ * that have been running the longest - a single flat global ranking by
+ * days running, no reach/views requirement and no per-competitor
+ * weighting. A competitor with more long-running ads naturally earns more
+ * of the slots; there's no guaranteed minimum per competitor.
  */
 export async function runSimpleSync(): Promise<CompetitorResult[]> {
   logger.info("Starting simple competitor ad sync", { fetchTiktok: env.SIMPLE_FETCH_TIKTOK });
@@ -579,59 +532,20 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
     competitors.map((competitor) => gatherCandidateGroups(trendtrack, competitor)),
   );
 
-  // Bucket A: SIMPLE_HIGH_REACH_AD_COUNT ads picked purely by reach, any
-  // date, split across competitors proportionally to weight.
-  const highReachSlots = allocateAdSlots(
-    gatherings.map((g) => ({ name: g.competitor.name, weight: g.weight, available: g.groups.length })),
-    env.SIMPLE_HIGH_REACH_AD_COUNT,
-  );
-  logger.info("Allocated high-reach bucket slots per competitor by live-ad weight", {
-    allocation: Object.fromEntries(highReachSlots),
-  });
-
-  const highReachBucket = gatherings.flatMap((gathering) => {
-    const slots = highReachSlots.get(gathering.competitor.name) ?? 0;
-    return [...gathering.groups]
-      .sort((a, b) => (b.representative.reach ?? 0) - (a.representative.reach ?? 0))
-      .slice(0, slots)
-      .map((group) => ({ gathering, group }));
-  });
-
-  // Bucket B: SIMPLE_RECENT_AD_COUNT more, picked purely by reach (no
-  // per-competitor weighting) from whatever's left that started running
-  // on/after RECENT_BUCKET_CUTOFF. Shortfall is backfilled from the
-  // remaining pool by reach (any date) so the total still reaches the
-  // full count whenever enough inventory exists.
+  // Flat global ranking by days running (nulls/missing sort last), across
+  // every competitor's candidates combined - take the top SIMPLE_TOTAL_AD_COUNT.
   const allEntries = gatherings.flatMap((gathering) =>
     gathering.groups.map((group) => ({ gathering, group })),
   );
-  const usedIds = new Set(highReachBucket.map((e) => e.group.representative.id));
+  const selected = [...allEntries]
+    .sort((a, b) => (b.group.representative.daysRunning ?? -1) - (a.group.representative.daysRunning ?? -1))
+    .slice(0, env.SIMPLE_TOTAL_AD_COUNT);
 
-  const recentBucket = allEntries
-    .filter((e) => !usedIds.has(e.group.representative.id) && e.group.representative.createdDate >= RECENT_BUCKET_CUTOFF)
-    .sort((a, b) => (b.group.representative.reach ?? 0) - (a.group.representative.reach ?? 0))
-    .slice(0, env.SIMPLE_RECENT_AD_COUNT);
-  for (const e of recentBucket) usedIds.add(e.group.representative.id);
-
-  if (recentBucket.length < env.SIMPLE_RECENT_AD_COUNT) {
+  if (selected.length < env.SIMPLE_TOTAL_AD_COUNT) {
     logger.warn(
-      `Could not fill the ${env.SIMPLE_RECENT_AD_COUNT}-ad recency bucket - only found ${recentBucket.length} eligible ad(s) created on/after ${RECENT_BUCKET_CUTOFF} that weren't already in the high-reach bucket`,
+      `Could only find ${selected.length} of the requested ${env.SIMPLE_TOTAL_AD_COUNT} ads across all competitors combined`,
     );
   }
-
-  const backfillNeeded = env.SIMPLE_RECENT_AD_COUNT - recentBucket.length;
-  const backfillBucket =
-    backfillNeeded > 0
-      ? allEntries
-          .filter((e) => !usedIds.has(e.group.representative.id))
-          .sort((a, b) => (b.group.representative.reach ?? 0) - (a.group.representative.reach ?? 0))
-          .slice(0, backfillNeeded)
-      : [];
-  if (backfillBucket.length > 0) {
-    logger.info(`Backfilled ${backfillBucket.length} additional high-reach ad(s) to make up the recency-bucket shortfall`);
-  }
-
-  const selected = [...highReachBucket, ...recentBucket, ...backfillBucket];
 
   const resultsByCompetitor = new Map<string, CompetitorResult>(
     gatherings.map((g) => [
@@ -656,7 +570,7 @@ export async function runSimpleSync(): Promise<CompetitorResult[]> {
   // Club the selected ads into ready-to-launch ad sets (max 5 ads, never
   // mixing video with static or Meta with TikTok within one set) before
   // writing anything out.
-  const allSelectedAds = results.flatMap((r) => r.ads).sort((a, b) => (b.reach ?? 0) - (a.reach ?? 0));
+  const allSelectedAds = results.flatMap((r) => r.ads).sort((a, b) => (b.daysRunning ?? -1) - (a.daysRunning ?? -1));
   for (const adSetGroup of clubIntoAdSets(allSelectedAds)) {
     for (const ad of adSetGroup.ads) ad.adSet = adSetGroup.label;
   }
