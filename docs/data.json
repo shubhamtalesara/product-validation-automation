@@ -1,27 +1,27 @@
 {
-  "generatedAt": "2026-11-13T13:35:28.363Z",
+  "generatedAt": "2026-11-13T13:40:34.598Z",
   "sheetUrl": "https://docs.google.com/spreadsheets/d/17mk_lA0Bdzt4ysmf5zvVlIzLXyfi3bMHvXV2YLcRlPg/edit",
   "competitors": [
     {
       "name": "Manifestly",
-      "landingPage": "https://mymanifestly.com/products/abundance-bracelet",
+      "landingPage": "https://mymanifestly.com",
       "error": null,
       "ads": []
     },
     {
       "name": "Kosmi",
-      "landingPage": "https://mykosmi.com/products/kosmi-abundance-bracelet",
+      "landingPage": "https://mykosmi.com",
       "error": null,
       "ads": []
     },
     {
       "name": "Circle of Love Co",
-      "landingPage": "https://www.circleofloveco.com/products/money-bracelet-green-aventurine-tiger-eye",
+      "landingPage": "https://www.circleofloveco.com",
       "error": null,
       "ads": [
         {
           "competitor": "Circle of Love Co",
-          "competitorLandingPage": "https://www.circleofloveco.com/products/money-bracelet-green-aventurine-tiger-eye",
+          "competitorLandingPage": "https://www.circleofloveco.com",
           "platform": "Meta",
           "pageName": "Circle of Love Co.",
           "adSet": "Ad Set 1 (Meta Video)",
@@ -45,7 +45,7 @@
         },
         {
           "competitor": "Circle of Love Co",
-          "competitorLandingPage": "https://www.circleofloveco.com/products/money-bracelet-green-aventurine-tiger-eye",
+          "competitorLandingPage": "https://www.circleofloveco.com",
           "platform": "Meta",
           "pageName": "Circle of Love Co.",
           "adSet": "Ad Set 1 (Meta Video)",
@@ -69,7 +69,7 @@
         },
         {
           "competitor": "Circle of Love Co",
-          "competitorLandingPage": "https://www.circleofloveco.com/products/money-bracelet-green-aventurine-tiger-eye",
+          "competitorLandingPage": "https://www.circleofloveco.com",
           "platform": "Meta",
           "pageName": "Circle of Love Co.",
           "adSet": "Ad Set 1 (Meta Video)",
@@ -95,12 +95,12 @@
     },
     {
       "name": "Chakra and Aura",
-      "landingPage": "https://chakraandaura.com/products/green-jade-tiger-s-eye-wealth-bracelet",
+      "landingPage": "https://chakraandaura.com",
       "error": null,
       "ads": [
         {
           "competitor": "Chakra and Aura",
-          "competitorLandingPage": "https://chakraandaura.com/products/green-jade-tiger-s-eye-wealth-bracelet",
+          "competitorLandingPage": "https://chakraandaura.com",
           "platform": "Meta",
           "pageName": "Bodhi Stone",
           "adSet": "Ad Set 2 (Meta Static)",
@@ -124,7 +124,7 @@
         },
         {
           "competitor": "Chakra and Aura",
-          "competitorLandingPage": "https://chakraandaura.com/products/green-jade-tiger-s-eye-wealth-bracelet",
+          "competitorLandingPage": "https://chakraandaura.com",
           "platform": "Meta",
           "pageName": "Bodhi Stone",
           "adSet": "Ad Set 2 (Meta Static)",
@@ -148,7 +148,7 @@
         },
         {
           "competitor": "Chakra and Aura",
-          "competitorLandingPage": "https://chakraandaura.com/products/green-jade-tiger-s-eye-wealth-bracelet",
+          "competitorLandingPage": "https://chakraandaura.com",
           "platform": "Meta",
           "pageName": "Bodhi Stone",
           "adSet": "Ad Set 2 (Meta Static)",
