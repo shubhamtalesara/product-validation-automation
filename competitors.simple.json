@@ -7,13 +7,21 @@
     }
   ],
   "competitors": [
-    {
-      "name": "My Hematix",
-      "landingPage": "https://myhematix.com"
-    },
-    {
-      "name": "My Hemios",
-      "landingPage": "https://myhemios.com"
-    }
-  ]
+  {
+    "name": "Manifestly",
+    "landingPage": "https://mymanifestly.com/products/abundance-bracelet"
+  },
+  {
+    "name": "Kosmi",
+    "landingPage": "https://mykosmi.com/products/kosmi-abundance-bracelet"
+  },
+  {
+    "name": "Circle of Love Co",
+    "landingPage": "https://www.circleofloveco.com/products/money-bracelet-green-aventurine-tiger-eye"
+  },
+  {
+    "name": "Chakra and Aura",
+    "landingPage": "https://chakraandaura.com/products/green-jade-tiger-s-eye-wealth-bracelet"
+  }
+]
 }
